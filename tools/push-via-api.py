@@ -78,33 +78,40 @@ def main():
         print('远程已是最新，无需提交')
         return 0
 
-    diff = git('diff', '--name-status', remote, head)
-    if not diff:
-        print('没有文件差异（可能只是提交信息不同），跳过')
-        return 1
+    # 不依赖本地是否见过远程提交：直接比「远程 tree 的 blob sha」与「本地 HEAD 的 blob sha」，
+    # 两者相同说明文件内容一致（sha 由内容算出），历史分叉也不影响判断。
+    remote_tree = api('%s/git/commits/%s' % (API, remote))['tree']['sha']
+    remote_blobs = {}
+    tree_data = api('%s/git/trees/%s?recursive=1' % (API, remote_tree))
+    for e in tree_data.get('tree', []):
+        if e.get('type') == 'blob':
+            remote_blobs[e['path']] = e['sha']
+    if tree_data.get('truncated'):
+        print('⚠ 远程文件列表被截断，改用保守策略（全部重传）')
 
     entries = []
-    for line in diff.splitlines():
-        parts = line.split('\t')
-        status, path = parts[0], parts[-1]
-        if status.startswith('D'):
-            continue        # 删除通过 tree 里省略表示，本次未涉及
+    for line in git('ls-tree', '-r', 'HEAD').splitlines():
+        if '\t' not in line:
+            continue
+        meta, path = line.split('\t', 1)
+        parts = meta.split()
+        if len(parts) < 3:
+            continue
+        mode, sha = parts[0], parts[2]
+        if remote_blobs.get(path) == sha:
+            continue            # 内容相同，跳过
         blob = git('cat-file', 'blob', 'HEAD:' + path, binary=True)
-        sha = api('%s/git/blobs' % API, 'POST', {
+        new_sha = api('%s/git/blobs' % API, 'POST', {
             'content': base64.b64encode(blob).decode('ascii'),
             'encoding': 'base64',
         })['sha']
-        mode = '100644'
-        try:
-            info = git('ls-tree', 'HEAD', '--', path)
-            if info and info.split()[0] == '100755':
-                mode = '100755'
-        except Exception:
-            pass
-        entries.append({'path': path, 'mode': mode, 'type': 'blob', 'sha': sha})
+        entries.append({'path': path, 'mode': mode, 'type': 'blob', 'sha': new_sha})
         print('  ↑ %s（%d 字节）' % (path, len(blob)))
 
-    remote_tree = api('%s/git/commits/%s' % (API, remote))['tree']['sha']
+    if not entries:
+        print('没有内容差异（可能只是提交信息不同），跳过')
+        return 1
+
     tree = api('%s/git/trees' % API, 'POST', {'base_tree': remote_tree, 'tree': entries})['sha']
     commit = api('%s/git/commits' % API, 'POST', {
         'message': msg,
@@ -115,8 +122,14 @@ def main():
     print('✓ 已通过 API 提交：%s  %s' % (commit[:7], msg))
 
     if sync_local:
-        # 本地 commit 与远程内容一致（同一棵树），直接把分支指过去，避免以后 push 冲突
-        same = git('diff', '--stat', commit, head)
+        # 本地 commit 与远程内容一致（同一棵树）时，直接把分支指过去，避免以后 push 打架。
+        # 若本地没有该提交对象（没见过远程历史），就提示手动对齐，不要报错中断。
+        try:
+            same = git('diff', '--stat', commit, head)
+        except RuntimeError:
+            print('· 本地缺少远程提交对象（未 fetch），内容已一致；')
+            print('  下次联网后在终端执行一次：git fetch origin && git reset --hard origin/main')
+            return 0
         if same:
             print('⚠ 本地与远程树不一致，未对齐本地分支：\n' + same)
             return 2
