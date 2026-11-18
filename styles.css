@@ -3151,3 +3151,13 @@ body.tour-open .mobile-nav .nav-item.active .nav-icon { color: var(--accent); }
   .upd-card { padding: 18px 16px 14px; }
   .upd-title { font-size: 21px; }
 }
+
+/* v3.2.4 · 更新弹层的下载源切换（国内加速 ⇄ GitHub 直连） */
+.upd-src {
+  margin-top: 10px; padding: 3px 0; align-self: flex-start;
+  background: none; border: 0; font: inherit; font-size: 12px;
+  color: var(--ink-muted); cursor: pointer; text-align: left;
+  border-bottom: 1px dashed var(--line-strong);
+}
+.upd-src:hover { color: var(--ink-sub); }
+.upd-src b { font-weight: 600; color: var(--ink-sub); }

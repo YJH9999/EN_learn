@@ -78,6 +78,13 @@ def body_for(ver, changelog=None):
     if picks:
         lines.append('')
     lines.append('v%s · com.cheri.token · 覆盖安装不影响学习记录' % ver)
+    # v3.2.3 起安装包统一命名 Token-v<version>.apk，给一条国内加速直链（浏览器里直接能下）
+    nums = [int(x) for x in re.findall(r'\d+', ver)[:3]]
+    while len(nums) < 3:
+        nums.append(0)
+    if tuple(nums) >= (3, 2, 3):
+        lines.append('国内加速下载：https://gh-proxy.com/https://github.com/YJH9999/EN_learn'
+                     '/releases/download/v%s/Token-v%s.apk' % (ver, ver))
     return '\n'.join(lines)
 
 

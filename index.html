@@ -81,7 +81,7 @@
           <div class="today-mini-nums"><span id="miniDone">0</span> / <span id="miniTotal">0</span></div>
           <div class="today-mini-bar"><div id="miniBar" class="today-mini-fill"></div></div>
         </div>
-        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.2.3</span></div>
+        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.2.4</span></div>
       </div>
     </aside>
 
@@ -956,7 +956,7 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
             </div>
             <button class="set-link" id="checkUpdateBtn">
               <span class="set-link-icon"><svg class="ic"><use href="#ic-refresh"/></svg></span>
-              <span class="set-link-main"><span class="set-label">检查更新</span><span class="set-desc" id="updateStatusText">从 GitHub 获取最新版本</span></span>
+              <span class="set-link-main"><span class="set-label">检查更新</span><span class="set-desc" id="updateStatusText">国内加速下载 · 慢时自动换源</span></span>
               <span class="set-link-arrow">›</span>
             </button>
             <button class="set-link" id="changelogToggle">
@@ -1269,6 +1269,7 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
         <div class="upd-pct" id="updPct">0%</div>
       </div>
       <div class="upd-tip" id="updTip">覆盖安装不会影响学习记录；下载完成后会直接弹出系统安装界面。</div>
+      <button class="upd-src" id="updSrcBtn" type="button">下载源：国内加速</button>
       <div class="upd-actions">
         <button class="btn btn-outline" id="updLater" type="button">以后再说</button>
         <button class="btn btn-primary" id="updNow" type="button">立即更新</button>

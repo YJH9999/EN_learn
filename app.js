@@ -10,10 +10,21 @@
 'use strict';
 
 // ===== 版本 =====
-const APP_VERSION = '3.2.3';
+const APP_VERSION = '3.2.4';
 const APP_NAME = 'Token';
 const AUTHOR_MAIL = 'YJH_9999@163.com';
 const CHANGELOG = [
+  {
+    v: '3.2.4',
+    date: '2026-11-18',
+    title: '下载走国内加速 · 更新更快',
+    items: [
+      '安装包改从国内加速节点下载，自动在多个节点之间切换：连不上 12 秒或文件不完整就换下一个，全部失败才回退 GitHub 直连',
+      '查最新版本也改走国内通道，弱网下不再一直转圈；国内节点异常时自动改用直连',
+      '更新弹层新增「下载源」切换，可随时在「国内加速 / GitHub 直连」之间切换并重试；会记住上次下载成功的节点',
+      '网页版点「立即更新」同样交给国内加速链接下载',
+    ],
+  },
   {
     v: '3.2.3',
     date: '2026-11-18',
@@ -6618,8 +6629,30 @@ function bindEvents() {
 // 没有原生插件时（网页 / 浏览器）自动回退为「打开下载页」。
 // =========================================================================
 const UPD_REPO = 'YJH9999/EN_learn';
-const UPD_API = 'https://api.github.com/repos/' + UPD_REPO + '/releases/latest';
+const UPD_API_PATH = 'https://api.github.com/repos/' + UPD_REPO + '/releases/latest';
+const UPD_PAGE = 'https://github.com/' + UPD_REPO + '/releases/latest';
 const UPD_SKIP_KEY = 'wr_updskip';     // 点过「以后再说」的版本号（本机，不同步）
+const UPD_SRC_KEY = 'wr_updsrc';       // 下载源偏好：auto（国内优先）/ github（直连优先）
+const UPD_OK_KEY = 'wr_updsrcok';      // 上次下载成功的源，下次优先用它
+
+// v3.2.4 国内加速：GitHub 在国内下 10MB 安装包常要几分钟甚至超时。
+// 这些反代都是「前缀 + 原始 GitHub 地址」的拼接式，不改原链接本身；
+// gh-proxy 额外支持代理 api.github.com（响应带 Access-Control-Allow-Origin: *），
+// 所以「查最新版本」也一起走国内，其余节点只用于下载文件。
+const UPD_MIRRORS = [
+  { id: 'gh-proxy', label: '国内加速', prefix: 'https://gh-proxy.com/', api: true },
+  { id: 'ghfast', label: '国内加速', prefix: 'https://ghfast.top/', api: false },
+  { id: 'ghproxy', label: '国内加速', prefix: 'https://ghproxy.net/', api: false },
+];
+const UPD_DIRECT = { id: 'direct', label: 'GitHub 直连', prefix: '', api: true };
+
+// 通道顺序：auto = 国内优先（直连兜底）；github = 直连优先（国内兜底）
+function updChannels() {
+  let pref = 'auto';
+  try { pref = localStorage.getItem(UPD_SRC_KEY) === 'github' ? 'github' : 'auto'; } catch (e) { /* 隐私模式 */ }
+  return pref === 'github' ? [UPD_DIRECT].concat(UPD_MIRRORS) : UPD_MIRRORS.concat([UPD_DIRECT]);
+}
+
 let _updInfo = null;                   // 最近一次查到的版本信息
 let _updFileUri = '';                  // 已下载好的安装包（授权后重试时复用）
 let _updBusy = false;
@@ -6639,19 +6672,62 @@ function cmpVersion(a, b) {
   return 0;
 }
 
+// 单一通道查询；超时 9 秒（国内节点正常 1~3 秒，卡住的直接换下一个）
+async function fetchReleaseVia(ch) {
+  const url = ch.prefix ? ch.prefix + UPD_API_PATH : UPD_API_PATH;
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 9000) : 0;
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: 'application/vnd.github+json' },
+      cache: 'no-store',
+      signal: ctrl ? ctrl.signal : undefined,
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+    const assets = d.assets || [];
+    const apk = assets.find(a => /\.apk$/i.test(a.name || '')) || assets[0] || null;
+    return {
+      ver: String(d.tag_name || '').replace(/^v/i, ''),
+      notes: String(d.body || '').replace(/\r/g, '').trim(),
+      url: apk ? apk.browser_download_url : UPD_PAGE,
+      size: apk ? (apk.size || 0) : 0,
+      page: d.html_url,
+      via: ch.id,
+    };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function fetchLatestRelease() {
-  const res = await fetch(UPD_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const d = await res.json();
-  const assets = d.assets || [];
-  const apk = assets.find(a => /\.apk$/i.test(a.name || '')) || assets[0] || null;
-  return {
-    ver: String(d.tag_name || '').replace(/^v/i, ''),
-    notes: String(d.body || '').replace(/\r/g, '').trim(),
-    url: apk ? apk.browser_download_url : d.html_url,
-    size: apk ? (apk.size || 0) : 0,
-    page: d.html_url,
-  };
+  const chans = updChannels().filter(c => c.api);
+  let lastErr = null;
+  for (let i = 0; i < chans.length; i++) {
+    try {
+      return await fetchReleaseVia(chans[i]);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('网络不可用');
+}
+
+// 下载候选：按通道顺序拼出国内加速地址（前缀 + 原始 release 链接），上次成功的源排最前
+function apkSources(info) {
+  const list = updChannels().map(ch => ({
+    id: ch.id,
+    label: ch.label,
+    url: ch.prefix ? ch.prefix + info.url : info.url,
+  }));
+  let okId = '';
+  try { okId = localStorage.getItem(UPD_OK_KEY) || ''; } catch (e) { /* 隐私模式 */ }
+  if (okId) {
+    const hit = list.filter(s => s.id === okId);
+    const rest = list.filter(s => s.id !== okId);
+    return hit.concat(rest);
+  }
+  return list;
 }
 
 function updSetStatus(text) {
@@ -6670,11 +6746,12 @@ function openUpdateDialog(info, manual) {
   $('#updBar').style.width = '0%';
   $('#updPct').textContent = '0%';
   $('#updTip').textContent = isNativeApp()
-    ? '覆盖安装不会影响学习记录；下载完成后会直接弹出系统安装界面。'
-    : '将打开下载页获取最新安装包。';
+    ? `覆盖安装不会影响学习记录；将从${apkSources(info)[0].label}下载，完成后自动弹出系统安装界面。`
+    : `将从${apkSources(info)[0].label}链接打开下载页获取最新安装包。`;
   const btn = $('#updNow');
   btn.disabled = false;
   btn.textContent = '立即更新';
+  renderUpdSrc();
   $('#updMask').classList.add('open');
   $('#updMask').setAttribute('aria-hidden', 'false');
 }
@@ -6741,11 +6818,12 @@ async function downloadAndInstall() {
   if (!info) return;
   const FS = capPlugin('Filesystem');
   const DS = capPlugin('DownloadSaver');
+  const sources = apkSources(info);
 
-  // 没有原生能力（网页版 / 权限被限制）：交给浏览器下载
+  // 没有原生能力（网页版 / 浏览器）：把国内加速链接交给浏览器，比 GitHub 原链快得多
   if (!isNativeApp() || !FS || !DS) {
-    window.open(info.url, '_blank');
-    $('#updTip').textContent = '已打开下载页，下载完成后点击安装包即可覆盖更新。';
+    window.open(sources[0].url, '_blank');
+    $('#updTip').textContent = `已打开${sources[0].label}下载页，下载完成后点安装包即可覆盖更新。`;
     return;
   }
 
@@ -6765,40 +6843,62 @@ async function downloadAndInstall() {
   $('#updProgressWrap').classList.remove('hidden');
   setPct(0);
 
-  try {
-    if (!_updListenerBound && FS.addListener) {
-      _updListenerBound = true;
-      FS.addListener('progress', (st) => {
-        if (st && st.contentLength > 0) setPct((st.bytes / st.contentLength) * 100);
-      });
-    }
-    // 缓存里已有同尺寸文件就跳过多余的第二次下载
-    let need = true;
-    try {
-      const st = await FS.stat({ path, directory: 'CACHE' });
-      if (st && st.size && info.size && Math.abs(st.size - info.size) < 2048) need = false;
-    } catch (e) { /* 不存在，正常下载 */ }
+  if (!_updListenerBound && FS.addListener) {
+    _updListenerBound = true;
+    FS.addListener('progress', (st) => {
+      if (st && st.contentLength > 0) setPct((st.bytes / st.contentLength) * 100);
+    });
+  }
 
-    if (need) {
+  // 缓存里已有完整文件就直接装（尺寸对得上才算；误差容忍 4KB）
+  try {
+    const st = await FS.stat({ path, directory: 'CACHE' });
+    if (st && st.size && info.size && Math.abs(st.size - info.size) <= 4096) {
+      setPct(100);
+      const got = await FS.getUri({ path, directory: 'CACHE' });
+      _updFileUri = got.uri;
+      return runInstall(_updFileUri);
+    }
+  } catch (e) { /* 没缓存，正常下载 */ }
+
+  // 依次尝试各下载源：连不上 / 文件不完整就换下一个，全失败才报错
+  let lastErr = '';
+  for (let i = 0; i < sources.length; i++) {
+    const src = sources[i];
+    btn.textContent = i === 0 ? '下载中…' : '换源重试…';
+    $('#updTip').textContent = i === 0
+      ? `正在通过${src.label}下载…`
+      : `当前节点较慢，已切换到${src.label}继续…`;
+    setPct(0);
+    try {
+      // 换源前清掉可能残留的半截文件，否则尺寸校验会误判
+      try { await FS.deleteFile({ path, directory: 'CACHE' }); } catch (e) { /* 本来没有 */ }
       await FS.downloadFile({
-        url: info.url,
+        url: src.url,
         path,
         directory: 'CACHE',
         progress: true,
         recursive: true,
-        connectTimeout: 30000,
-        readTimeout: 180000,
+        connectTimeout: 12000,     // 接不上就赶紧换源，不让用户干等
+        readTimeout: 60000,
       });
+      const st = await FS.stat({ path, directory: 'CACHE' });
+      if (info.size && st && st.size && Math.abs(st.size - info.size) > 4096) {
+        throw new Error('文件不完整 ' + st.size + '/' + info.size);
+      }
+      setPct(100);
+      try { localStorage.setItem(UPD_OK_KEY, src.id); } catch (e) { /* 隐私模式忽略 */ }
+      const got = await FS.getUri({ path, directory: 'CACHE' });
+      _updFileUri = got.uri;
+      return await runInstall(_updFileUri);
+    } catch (e) {
+      lastErr = (e && e.message) || String(e);
     }
-    setPct(100);
-    const got = await FS.getUri({ path, directory: 'CACHE' });
-    _updFileUri = got.uri;
-    await runInstall(_updFileUri);
-  } catch (e) {
-    btn.disabled = false;
-    btn.textContent = '重新下载';
-    $('#updTip').textContent = '下载失败：' + ((e && e.message) || e) + '。可直接打开下载页手动安装。';
   }
+
+  btn.disabled = false;
+  btn.textContent = '重新下载';
+  $('#updTip').textContent = `下载失败：${lastErr}。已尝试 ${sources.length} 个下载源，可稍后重试或到 Releases 页手动下载。`;
 }
 
 function bindUpdateEvents() {
@@ -6813,6 +6913,30 @@ function bindUpdateEvents() {
   if (now) now.addEventListener('click', downloadAndInstall);
   const chk = $('#checkUpdateBtn');
   if (chk) chk.addEventListener('click', () => checkUpdate({ manual: true }));
+  renderUpdSrc();
+  const srcBtn = $('#updSrcBtn');
+  if (srcBtn) srcBtn.addEventListener('click', () => {
+    const next = updPrefNow() === 'github' ? 'auto' : 'github';
+    try { localStorage.setItem(UPD_SRC_KEY, next); } catch (e) { /* ignore */ }
+    renderUpdSrc();
+    const tip = $('#updTip');
+    if (tip && !_updFileUri) {
+      tip.textContent = `已切换下载源：将从${apkSources(_updInfo || { url: '' })[0].label}下载。点「立即更新」重试。`;
+    }
+    toast(next === 'github' ? '下载源：GitHub 直连' : '下载源：国内加速');
+  });
+}
+
+// 下载源偏好（auto = 国内优先；github = 直连优先），两者都会在失败时自动回退另一个
+function updPrefNow() {
+  try { return localStorage.getItem(UPD_SRC_KEY) === 'github' ? 'github' : 'auto'; } catch (e) { return 'auto'; }
+}
+function renderUpdSrc() {
+  const el = $('#updSrcBtn');
+  if (!el) return;
+  el.innerHTML = updPrefNow() === 'github'
+    ? '下载源：<b>GitHub 直连</b> · 点此改用国内加速'
+    : '下载源：<b>国内加速</b> · 点此改用 GitHub 直连';
 }
 
 function initUpdateChecker() {
