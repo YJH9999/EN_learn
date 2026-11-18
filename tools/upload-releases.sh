@@ -107,12 +107,9 @@ print(' '.join(str(a['id']) for a in d.get('assets',[]) if str(a.get('name',''))
     fi
   else
     printf '→ %s（%s）创建 release ... ' "$tag" "$base"
-    # Release 说明取自 VERSIONS.md 的「本次重点」，App 内的更新弹层会直接显示这段
-    note=$(grep -m1 "^| v$ver |" "$HERE/VERSIONS.md" 2>/dev/null | awk -F'|' '{gsub(/^ +| +$/, "", $4); print $4}')
-    body="Token 背单词工坊 $tag 安装包（包名 com.cheri.token）"
-    [ -n "$note" ] && body="本次更新：$note
-
-安装包 $tag · 包名 com.cheri.token · 覆盖安装不影响学习记录"
+    # 更新说明由 CHANGELOG 生成（简练版：一行要点 + 最多 3 条短句），App 内更新弹层直接展示
+    body=$(python "$HERE/tools/gen-release-body.py" "$ver" 2>/dev/null)
+    [ -z "$body" ] && body="Token 背单词工坊 $tag 安装包（包名 com.cheri.token）"
     payload=$(python -c "
 import json,sys
 print(json.dumps({'tag_name':sys.argv[1],'name':'Token '+sys.argv[1],

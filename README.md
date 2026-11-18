@@ -85,3 +85,21 @@ bash tools/publish.sh --no-push  # 只复制 + 提交，稍后自己推送
 - 或者命令行：`GITHUB_TOKEN=xxx bash tools/upload-releases.sh`。
 
 已发布且安装包已存在的版本会自动跳过，中断了再跑一次能接着传（只补缺的）；同版本重打包后用 `bash tools/upload-releases.sh --force` 覆盖旧安装包。传完在 <https://github.com/YJH9999/EN_learn/releases> 查看。
+
+## 每个版本的更新说明
+
+Release 的说明不再是一句干巴巴的「安装包」，而是从 `app.js` 的 `CHANGELOG` 自动生成的简练要点：
+
+```
+本次更新：修复吸顶标题抖动
+
+· 修复首页、学习、速记等版块滚到「标题刚好收起」的位置时，顶部标题条来回抖动…
+· 折叠、吸顶、头像缩小等观感与之前一致，只是不再抖
+
+v3.2.3 · com.cheri.token · 覆盖安装不影响学习记录
+```
+
+- 上传新版本时自动带上，无需手写
+- 想把历史 Release 的说明也补齐 / 改措辞：`python tools/update-release-notes.py`（内容相同的自动跳过，可反复运行；加 `--dry` 只预览）
+- 单独看某版本会生成什么：`python tools/gen-release-body.py 3.2.1`
+- 这段文字同时就是 App 内更新弹层里显示的「更新内容」
