@@ -107,8 +107,18 @@ print(' '.join(str(a['id']) for a in d.get('assets',[]) if str(a.get('name',''))
     fi
   else
     printf '→ %s（%s）创建 release ... ' "$tag" "$base"
-    resp=$(curl -s -m 60 -X POST "${auth[@]}" -H "Content-Type: application/json" "$API/releases" \
-      -d "{\"tag_name\":\"$tag\",\"name\":\"Token $tag\",\"body\":\"Token 背单词工坊 $tag 安装包（包名 com.cheri.token）\",\"draft\":false,\"prerelease\":false}")
+    # Release 说明取自 VERSIONS.md 的「本次重点」，App 内的更新弹层会直接显示这段
+    note=$(grep -m1 "^| v$ver |" "$HERE/VERSIONS.md" 2>/dev/null | awk -F'|' '{gsub(/^ +| +$/, "", $4); print $4}')
+    body="Token 背单词工坊 $tag 安装包（包名 com.cheri.token）"
+    [ -n "$note" ] && body="本次更新：$note
+
+安装包 $tag · 包名 com.cheri.token · 覆盖安装不影响学习记录"
+    payload=$(python -c "
+import json,sys
+print(json.dumps({'tag_name':sys.argv[1],'name':'Token '+sys.argv[1],
+                  'body':sys.argv[2],'draft':False,'prerelease':False}, ensure_ascii=False))
+" "$tag" "$body")
+    resp=$(curl -s -m 60 -X POST "${auth[@]}" -H "Content-Type: application/json" "$API/releases" -d "$payload")
     upload=$(printf '%s' "$resp" | sed -n 's/.*"upload_url": *"\([^"{]*\).*/\1/p')
     if [ -z "$upload" ]; then
       echo "失败"
