@@ -51,10 +51,24 @@ bash tools/publish.sh --no-push  # 只复制 + 提交，稍后自己推送
 
 `tools/publish.sh` 只同步真正运行需要的文件（`index.html` / `app.js` / `styles.css` / `sync.js` / `data/` / `lib/`），不会带上 `node_modules`、`release/`、教材照片等无关内容。
 
-## 发布安装包
+## 发布安装包（APK → Releases）
 
-```bash
-GITHUB_TOKEN=ghp_xxx bash tools/upload-releases.sh   # 把 release 目录里的 APK 全部传到 Releases
-```
+安装包体积大，不进 git 仓库，改走 Releases。`D:\User Tools\背单词工坊\release` 里的 45 个历史 APK（约 464MB）一次性传完即可，以后每发一版再跑一次。
 
-需要一次性创建 Personal Access Token（勾选 `repo` 权限）。也可以直接在 GitHub 网页的 Releases 页面拖拽上传。
+**第一步：生成令牌（只需做一次）**
+
+1. GitHub 右上角头像 → **Settings** → 左栏最下方 **Developer settings**
+2. **Personal access tokens** → **Fine-grained tokens** → **Generate new token**
+3. Token name 随便填（如 `token-release-upload`），Expiration 选 7 天
+4. Repository access 选 **Only select repositories** → 只勾 `YJH9999/EN_learn`
+5. Permissions → Repository permissions → **Contents** 设为 **Read and write**（其余保持 No access）
+6. **Generate token** → 复制那串 `github_pat_...`（离开页面就再也看不到了）
+
+> 也可以用 Tokens (classic)，勾一个 `repo` 就够，但 classic 令牌权限更大，用完记得删。
+
+**第二步：上传**
+
+- 双击仓库根目录的 **`upload-releases.cmd`**，粘贴令牌回车，等它跑完（464MB，看网速大概十几分钟）；
+- 或者命令行：`GITHUB_TOKEN=xxx bash tools/upload-releases.sh`。
+
+已发布过的 tag 会自动跳过，中断了再跑一次能接着传。传完在 <https://github.com/YJH9999/EN_learn/releases> 查看。
