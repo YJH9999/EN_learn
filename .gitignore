@@ -16,3 +16,5 @@ release/
 *.log
 *.tmp
 .env
+.token
+*.token

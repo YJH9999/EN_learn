@@ -15,9 +15,15 @@
 set -uo pipefail
 
 REPO="YJH9999/EN_learn"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APK_DIR="${APK_DIR:-D:/User Tools/背单词工坊/release}"
 TOKEN="${GITHUB_TOKEN:-}"
 API="https://api.github.com/repos/$REPO"
+
+# 也支持把令牌写进仓库根目录的 .token（已在 .gitignore 中，不会提交）
+if [ -z "$TOKEN" ] && [ -f "$HERE/.token" ]; then
+  TOKEN="$(tr -d ' \r\n\t' < "$HERE/.token")"
+fi
 
 if [ -z "$TOKEN" ]; then
   echo "✗ 请先设置 GITHUB_TOKEN（GitHub 个人访问令牌）" >&2
