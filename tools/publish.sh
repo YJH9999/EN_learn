@@ -44,9 +44,25 @@ fi
 
 if [ "$PUSH" = "1" ]; then
   echo "→ 推送到 origin/main ..."
+  ok=1
   if ! git push -u origin main; then
     echo "→ 代理不通，改用直连重试 ..."
-    env -u https_proxy -u HTTPS_PROXY -u http_proxy -u HTTP_PROXY git push -u origin main
+    if ! env -u https_proxy -u HTTPS_PROXY -u http_proxy -u HTTP_PROXY git push -u origin main; then
+      ok=0
+    fi
   fi
-  echo "✓ 已推送"
+  if [ "$ok" = "1" ]; then
+    echo "✓ 已推送"
+  else
+    # github.com:443 被拦时，git 协议完全走不通；api.github.com 通常还能连，
+    # 于是改用 Git Data API 提交同样的内容（按 blob 内容比对，历史分叉也不影响）
+    echo "→ git 协议不通，改用 GitHub API 提交 ..."
+    if python "$HERE/tools/push-via-api.py"; then
+      echo "✓ 已通过 API 提交"
+    else
+      echo "✗ 提交失败：内容已保存在本地 commit，联网后在终端执行"
+      echo "    git push -u origin main   或   python tools/push-via-api.py"
+      exit 1
+    fi
+  fi
 fi
