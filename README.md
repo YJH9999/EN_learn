@@ -51,6 +51,19 @@ bash tools/publish.sh --no-push  # 只复制 + 提交，稍后自己推送
 
 `tools/publish.sh` 只同步真正运行需要的文件（`index.html` / `app.js` / `styles.css` / `sync.js` / `data/` / `lib/`），不会带上 `node_modules`、`release/`、教材照片等无关内容。
 
+## 应用内更新（v3.2.2+）
+
+安装包不再需要在电脑上手动传：App 里直接检查并升级。
+
+- **自动检查**：原生端启动 4 秒后静默请求 `https://api.github.com/repos/YJH9999/EN_learn/releases/latest`，与新版本号比对；有更新才弹层，不打扰使用
+- **手动检查**：设置 → 关于 → 检查更新
+- **升级方式**：弹层显示版本号、更新说明与安装包大小 → 「立即更新」→ App 内下载（带进度条）→ 下载完直接调起系统安装界面，覆盖安装不影响学习记录
+- **首次可能跳系统授权**：Android 需允许「安装未知应用」，跳到设置页授权后返回点「继续安装」即可，安装包已缓存不会重下
+- **回退**：网页版或原生能力不可用时，自动改为打开下载页
+- 「以后再说」只对当前这个版本生效，下次启动有新版本仍会提示
+
+> 只有把新版本上传为 Release、且 tag 形如 `v3.2.3`，App 才能识别到——发版顺序必须是「构建 APK → 上传 Release」。
+
 ## 发布安装包（APK → Releases）
 
 安装包体积大，不进 git 仓库，改走 Releases。`D:\User Tools\背单词工坊\release` 里的 45 个历史 APK（约 464MB）一次性传完即可，以后每发一版再跑一次。
@@ -71,4 +84,4 @@ bash tools/publish.sh --no-push  # 只复制 + 提交，稍后自己推送
 - 双击仓库根目录的 **`upload-releases.cmd`**，粘贴令牌回车，等它跑完（464MB，看网速大概十几分钟）；
 - 或者命令行：`GITHUB_TOKEN=xxx bash tools/upload-releases.sh`。
 
-已发布过的 tag 会自动跳过，中断了再跑一次能接着传。传完在 <https://github.com/YJH9999/EN_learn/releases> 查看。
+已发布且安装包已存在的版本会自动跳过，中断了再跑一次能接着传（只补缺的）；同版本重打包后用 `bash tools/upload-releases.sh --force` 覆盖旧安装包。传完在 <https://github.com/YJH9999/EN_learn/releases> 查看。

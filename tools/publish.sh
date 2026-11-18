@@ -44,6 +44,9 @@ fi
 
 if [ "$PUSH" = "1" ]; then
   echo "→ 推送到 origin/main ..."
-  git push -u origin main
+  if ! git push -u origin main; then
+    echo "→ 代理不通，改用直连重试 ..."
+    env -u https_proxy -u HTTPS_PROXY -u http_proxy -u HTTP_PROXY git push -u origin main
+  fi
   echo "✓ 已推送"
 fi

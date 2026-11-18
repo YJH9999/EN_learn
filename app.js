@@ -10,10 +10,22 @@
 'use strict';
 
 // ===== 版本 =====
-const APP_VERSION = '3.2.1';
+const APP_VERSION = '3.2.2';
 const APP_NAME = 'Token';
 const AUTHOR_MAIL = 'YJH_9999@163.com';
 const CHANGELOG = [
+  {
+    v: '3.2.2',
+    date: '2026-11-18',
+    title: '应用内更新 · 一键覆盖安装',
+    items: [
+      '设置页新增「检查更新」：直接读取 GitHub Releases 的最新版本号与更新说明，和当前版本比对',
+      '发现新版本时弹层显示版本号、更新内容与安装包大小；原生端在后台下载并显示进度条，下载完直接调起系统安装界面',
+      '首次更新若系统未允许「安装未知应用」，会跳到系统授权页，返回后点「继续安装」即可，不会重新下载',
+      '点过「以后再说」的版本本次不再打扰；下次启动只在有更新的版本时提示',
+      '网页版或没有原生能力时自动回退为打开下载页，覆盖安装不会影响学习记录',
+    ],
+  },
   {
     v: '3.2.1',
     date: '2026-11-18',
@@ -5330,6 +5342,7 @@ function renderSettingsValues() {
   $('#setRoteSinkChecked').checked = s.roteSinkChecked !== false;
   $('#setSpeechRate').value = String(s.speechRate || 0.85);
   $('#aboutVersion').textContent = `${APP_NAME} v${APP_VERSION}`;
+  if (!_updInfo) updSetStatus(`当前 v${APP_VERSION} · 点此检查更新`);
   // 个人资料
   if (document.activeElement !== $('#setUserName')) $('#setUserName').value = s.userName || '词友';
   if (document.activeElement !== $('#setUserBio')) $('#setUserBio').value = s.userBio || '';
@@ -6590,6 +6603,215 @@ function bindEvents() {
 }
 
 // ===== 初始化 =====
+// =========================================================================
+// v3.2.2：应用内更新
+// 检查 GitHub Releases 最新 tag → 应用内下载 APK → 调起系统安装器（覆盖安装，记录不丢）
+// 没有原生插件时（网页 / 浏览器）自动回退为「打开下载页」。
+// =========================================================================
+const UPD_REPO = 'YJH9999/EN_learn';
+const UPD_API = 'https://api.github.com/repos/' + UPD_REPO + '/releases/latest';
+const UPD_SKIP_KEY = 'wr_updskip';     // 点过「以后再说」的版本号（本机，不同步）
+let _updInfo = null;                   // 最近一次查到的版本信息
+let _updFileUri = '';                  // 已下载好的安装包（授权后重试时复用）
+let _updBusy = false;
+let _updListenerBound = false;
+
+const isNativeApp = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const capPlugin = (n) => (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins[n]) || null;
+
+function cmpVersion(a, b) {
+  const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const x = pa[i] || 0, y = pb[i] || 0;
+    if (x !== y) return x > y ? 1 : -1;
+  }
+  return 0;
+}
+
+async function fetchLatestRelease() {
+  const res = await fetch(UPD_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const d = await res.json();
+  const assets = d.assets || [];
+  const apk = assets.find(a => /\.apk$/i.test(a.name || '')) || assets[0] || null;
+  return {
+    ver: String(d.tag_name || '').replace(/^v/i, ''),
+    notes: String(d.body || '').replace(/\r/g, '').trim(),
+    url: apk ? apk.browser_download_url : d.html_url,
+    size: apk ? (apk.size || 0) : 0,
+    page: d.html_url,
+  };
+}
+
+function updSetStatus(text) {
+  const el = $('#updateStatusText');
+  if (el) el.textContent = text;
+}
+
+function openUpdateDialog(info, manual) {
+  _updInfo = info;
+  _updFileUri = '';
+  $('#updTitle').textContent = 'v' + info.ver;
+  $('#updSub').textContent = `当前 v${APP_VERSION}` + (info.size ? ` · 安装包约 ${(info.size / 1048576).toFixed(1)} MB` : '');
+  $('#updNotes').textContent = info.notes || '这一版修复了若干问题、优化了细节，建议更新。';
+  $('#updBadge').textContent = manual ? '可更新' : '发现新版本';
+  $('#updProgressWrap').classList.add('hidden');
+  $('#updBar').style.width = '0%';
+  $('#updPct').textContent = '0%';
+  $('#updTip').textContent = isNativeApp()
+    ? '覆盖安装不会影响学习记录；下载完成后会直接弹出系统安装界面。'
+    : '将打开下载页获取最新安装包。';
+  const btn = $('#updNow');
+  btn.disabled = false;
+  btn.textContent = '立即更新';
+  $('#updMask').classList.add('open');
+  $('#updMask').setAttribute('aria-hidden', 'false');
+}
+
+function closeUpdateDialog() {
+  $('#updMask').classList.remove('open');
+  $('#updMask').setAttribute('aria-hidden', 'true');
+}
+
+async function checkUpdate(opts) {
+  const manual = !!(opts && opts.manual);
+  if (_updBusy) return;
+  _updBusy = true;
+  if (manual) updSetStatus('正在检查…');
+  try {
+    const info = await fetchLatestRelease();
+    _updBusy = false;
+    if (!info.ver) throw new Error('未找到可用版本');
+    const newer = cmpVersion(info.ver, APP_VERSION) > 0;
+    if (!newer) {
+      updSetStatus(`已是最新版本 v${APP_VERSION}`);
+      if (manual) toast('已经是最新版本了');
+      return;
+    }
+    updSetStatus(`发现新版本 v${info.ver}`);
+    if (!manual) {
+      let skip = '';
+      try { skip = localStorage.getItem(UPD_SKIP_KEY) || ''; } catch (e) { /* 隐私模式忽略 */ }
+      if (skip === info.ver) return;      // 这版用户点过「以后再说」，本次启动不再弹
+    }
+    openUpdateDialog(info, manual);
+  } catch (e) {
+    _updBusy = false;
+    updSetStatus('检查失败，点此重试');
+    if (manual) toast('检查更新失败：' + ((e && e.message) || e));
+  }
+}
+
+// 把已下载的安装包交给系统安装器；未授权「安装未知应用」时会跳系统设置
+async function runInstall(fileUri) {
+  const btn = $('#updNow');
+  btn.disabled = true;
+  btn.textContent = '正在调起安装…';
+  try {
+    const r = await capPlugin('DownloadSaver').installApk({ path: fileUri });
+    if (r && r.needPermission) {
+      $('#updTip').textContent = '已打开系统设置：请允许「Token」安装应用，返回后点「继续安装」即可（安装包已下载好，不会重新下）。';
+      btn.disabled = false;
+      btn.textContent = '继续安装';
+      return;
+    }
+    $('#updTip').textContent = '已调起系统安装界面，按提示完成安装即可。';
+    btn.textContent = '已开始安装';
+    setTimeout(closeUpdateDialog, 1400);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '重试安装';
+    $('#updTip').textContent = '安装失败：' + ((e && e.message) || e);
+  }
+}
+
+async function downloadAndInstall() {
+  const info = _updInfo;
+  if (!info) return;
+  const FS = capPlugin('Filesystem');
+  const DS = capPlugin('DownloadSaver');
+
+  // 没有原生能力（网页版 / 权限被限制）：交给浏览器下载
+  if (!isNativeApp() || !FS || !DS) {
+    window.open(info.url, '_blank');
+    $('#updTip').textContent = '已打开下载页，下载完成后点击安装包即可覆盖更新。';
+    return;
+  }
+
+  // 已经下好（比如刚去授权「安装未知应用」回来）：直接装，不再重复下载
+  if (_updFileUri) return runInstall(_updFileUri);
+
+  const btn = $('#updNow');
+  const path = 'updates/Token-v' + info.ver + '.apk';
+  const setPct = (p) => {
+    const pct = Math.max(0, Math.min(100, Math.round(p)));
+    $('#updBar').style.width = pct + '%';
+    $('#updPct').textContent = pct + '%';
+  };
+
+  btn.disabled = true;
+  btn.textContent = '下载中…';
+  $('#updProgressWrap').classList.remove('hidden');
+  setPct(0);
+
+  try {
+    if (!_updListenerBound && FS.addListener) {
+      _updListenerBound = true;
+      FS.addListener('progress', (st) => {
+        if (st && st.contentLength > 0) setPct((st.bytes / st.contentLength) * 100);
+      });
+    }
+    // 缓存里已有同尺寸文件就跳过多余的第二次下载
+    let need = true;
+    try {
+      const st = await FS.stat({ path, directory: 'CACHE' });
+      if (st && st.size && info.size && Math.abs(st.size - info.size) < 2048) need = false;
+    } catch (e) { /* 不存在，正常下载 */ }
+
+    if (need) {
+      await FS.downloadFile({
+        url: info.url,
+        path,
+        directory: 'CACHE',
+        progress: true,
+        recursive: true,
+        connectTimeout: 30000,
+        readTimeout: 180000,
+      });
+    }
+    setPct(100);
+    const got = await FS.getUri({ path, directory: 'CACHE' });
+    _updFileUri = got.uri;
+    await runInstall(_updFileUri);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '重新下载';
+    $('#updTip').textContent = '下载失败：' + ((e && e.message) || e) + '。可直接打开下载页手动安装。';
+  }
+}
+
+function bindUpdateEvents() {
+  const later = $('#updLater');
+  if (later) later.addEventListener('click', () => {
+    if (_updInfo && !_updFileUri) {
+      try { localStorage.setItem(UPD_SKIP_KEY, _updInfo.ver); } catch (e) { /* ignore */ }
+    }
+    closeUpdateDialog();
+  });
+  const now = $('#updNow');
+  if (now) now.addEventListener('click', downloadAndInstall);
+  const chk = $('#checkUpdateBtn');
+  if (chk) chk.addEventListener('click', () => checkUpdate({ manual: true }));
+}
+
+function initUpdateChecker() {
+  bindUpdateEvents();
+  // 原生端启动 4 秒后静默查一次（不打扰使用，有新版才弹）；网页端只在手动点「检查更新」时查
+  if (isNativeApp()) setTimeout(() => { checkUpdate({ manual: false }); }, 4000);
+}
+
 function init() {
   if (!window.BUILTIN_WORDS) {
     document.body.innerHTML = '<p style="padding:40px;text-align:center">词库数据加载失败，请确认 data/words.js 存在。</p>';
@@ -6607,6 +6829,9 @@ function init() {
 
   // v3.2.1：使用时长计时（每 15 秒一笔，按自然日累计）
   startUsageClock();
+
+  // v3.2.2：应用内更新（原生端启动后静默检查一次，设置页可手动检查）
+  try { initUpdateChecker(); } catch (e) { console.warn('update check init failed', e); }
 
   // v3.1.2：启动画面淡出移除（HTML/CSS 就绪即显示，主脚本就绪后离开）
   const boot = $('#bootSplash');

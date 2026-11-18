@@ -81,7 +81,7 @@
           <div class="today-mini-nums"><span id="miniDone">0</span> / <span id="miniTotal">0</span></div>
           <div class="today-mini-bar"><div id="miniBar" class="today-mini-fill"></div></div>
         </div>
-        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.2.1</span></div>
+        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.2.2</span></div>
       </div>
     </aside>
 
@@ -954,6 +954,11 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
                 <div class="set-desc" id="aboutVersion">Token v2.9.2</div>
               </div>
             </div>
+            <button class="set-link" id="checkUpdateBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-refresh"/></svg></span>
+              <span class="set-link-main"><span class="set-label">检查更新</span><span class="set-desc" id="updateStatusText">从 GitHub 获取最新版本</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
             <button class="set-link" id="changelogToggle">
               <span class="set-link-icon"><svg class="ic"><use href="#ic-edit"/></svg></span>
               <span class="set-link-main"><span class="set-label">版本说明</span><span class="set-desc">查看本次大版本更新的全部内容</span></span>
@@ -1247,6 +1252,27 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
         <span class="scb-sub">本机才是最新进度时选这个</span>
       </button>
       <div class="sync-choice-note">拿不准就选「合并两边数据」，不会丢进度。</div>
+    </div>
+  </div>
+
+  <!-- ============ v3.2.2 应用内更新 ============ -->
+  <div class="upd-mask" id="updMask" aria-hidden="true">
+    <div class="upd-card" role="dialog" aria-modal="true" aria-labelledby="updTitle">
+      <div class="upd-head">
+        <div class="upd-badge" id="updBadge">新版本</div>
+        <div class="upd-title" id="updTitle">v3.2.2</div>
+        <div class="upd-sub" id="updSub">当前 v3.2.1</div>
+      </div>
+      <div class="upd-notes" id="updNotes"></div>
+      <div class="upd-progress hidden" id="updProgressWrap">
+        <div class="upd-bar"><div class="upd-bar-in" id="updBar"></div></div>
+        <div class="upd-pct" id="updPct">0%</div>
+      </div>
+      <div class="upd-tip" id="updTip">覆盖安装不会影响学习记录；下载完成后会直接弹出系统安装界面。</div>
+      <div class="upd-actions">
+        <button class="btn btn-outline" id="updLater" type="button">以后再说</button>
+        <button class="btn btn-primary" id="updNow" type="button">立即更新</button>
+      </div>
     </div>
   </div>
 

@@ -3090,3 +3090,57 @@ body.tour-open .mobile-nav .nav-item.active .nav-icon { color: var(--accent); }
   .sidebar .today-mini { display: none; }
   .sidebar .user-entry-sub { display: none; }
 }
+
+/* =========================================================================
+ * v3.2.2 · 应用内更新弹层
+ * ========================================================================= */
+.upd-mask {
+  position: fixed; inset: 0; z-index: 160; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+  background: rgba(17, 16, 20, .55);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.upd-mask.open { display: flex; }
+.upd-card {
+  width: min(440px, 100%); max-height: calc(100vh - 40px); overflow: auto;
+  background: var(--paper-raised); border-radius: 20px;
+  padding: 22px 20px 16px; box-shadow: var(--shadow-md);
+  animation: choiceIn .26s var(--ease-out-quart);
+}
+.upd-badge {
+  display: inline-block; padding: 3px 9px; border-radius: 999px;
+  background: var(--navy-soft); color: var(--navy);
+  font-size: 11.5px; font-weight: 700; letter-spacing: .4px;
+}
+.upd-title {
+  font-family: var(--serif); font-size: 24px; font-weight: 700;
+  margin-top: 9px; line-height: 1.25;
+}
+.upd-sub { font-size: 12.5px; color: var(--ink-muted); margin-top: 4px; }
+.upd-notes {
+  margin-top: 14px; padding: 12px 13px; border-radius: 12px;
+  background: var(--paper-deep); border: 1px solid var(--line);
+  font-size: 13px; line-height: 1.72; color: var(--ink-sub);
+  max-height: 34vh; overflow: auto; white-space: pre-wrap;
+}
+.upd-notes:empty { display: none; }
+.upd-progress { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
+.upd-bar {
+  flex: 1; height: 7px; border-radius: 999px; overflow: hidden;
+  background: var(--line);
+}
+.upd-bar-in {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: var(--navy); transition: width .2s linear;
+}
+.upd-pct {
+  font-size: 12px; font-variant-numeric: tabular-nums;
+  color: var(--ink-muted); min-width: 38px; text-align: right;
+}
+.upd-tip { font-size: 11.5px; color: var(--ink-muted); line-height: 1.6; margin-top: 12px; }
+.upd-actions { display: flex; gap: 10px; margin-top: 16px; }
+.upd-actions .btn { flex: 1; }
+@media (max-width: 420px) {
+  .upd-card { padding: 18px 16px 14px; }
+  .upd-title { font-size: 21px; }
+}
