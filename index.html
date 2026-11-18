@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f2f2f7">
+  <title>Token · 背单词工作台</title>
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAABMXPacAAAACXBIWXMAAC4jAAAuIwF4pT92AAAMsUlEQVR42u2ddYwUzxLHF/i9H8EdggR3J7gEh6APCQ4J7n44BA+uD3cPECTBITjB3f3h7u72PtkKncnd3rC3N293Zn9df2z65ub2qqu6u6qrvtXtcmnSpEmTJk2aNGnSpEmTJk2aNGnSpEmTJk2aNGlyNkWJEiVatGh/uelfTiBhNWrUqHDubNFHdZOju8DQcaQaYFqJPkmSJJUrV+7Vq9e4ceP+Y1eaPHnylClTpk2bNnXq1JEjR7Zr1y5//vzRo0cP1RfHDHwZNcWKFVuxYsWbN29+/fr18+fPX44iGL506VL//v0TJ07spKkAo3zC9MKFC79//05Pnjx5ghpCQkLq1q37b/tR7dq1O3XqNG/evOvXr8Ptjx8/Pn/+DOc/3cSTBw8eNGrUyDiw7C79HDlyXLx4Edbv3r3bvn37BAkSOGLixo4du0mTJleuXIFzGToo4Nu3b6KGCRMmRHGTrVcePrNly3bnzh04Xr16tUxe8YLsTyLcmDFjzpo1S6bCly9f0AQ6eP/+PU+mT58u3bGp1eUzbty4x48fh9eZM2fKQ/w5p3gRMlBkGA0aNIhePHv27OzZszT+6yYaXbt2VRPdjsN/xIgRcLlp0yYZUE70QeFZ5Dt37lz6snHjxmPHjtHApD1//vzDhw9McdVfe0k/c+bMTFV8nixZstiOxYh3J1GiRLdu3cIg4wihgBMnTowfP57G/Pnzbdc7GTJDhw6FvzFjxtBm5XH0/kv479ChAz1ic7B48WIaOEtXr17FMKRLl85GOpAlHh2cPHkSLvPkyePo4W/sVIoUKd6+fcvq37x5c1mFGF402rRpY6NBJrJOnTo1nF24cEHYcnwU5Xe/tmzZQr/YLmAA2JfVr1+fHxcsWGAjUyx8lC5dGs7WrFljUyfB136NHj2afjVr1mzv3r2fPn2qXr06Xunhw4eNE8UWjLKflOUyyBTQrVs3Wf3ZzNOoUqXK06dPb9y4IfPDRgogzAB/kyZNCjIFdOzYkX516dJlyZIlNCpVqvTo0aPbt2/Lb7UC/K0AwrpaAVoBPinAJCJk7rMGKqujZ4CeARYpQLiMFy8e3nS9evUaNGhQtWrVcuXK8Se41XzmzZs3vM6Qoa1YseLy5ctLlCjh5/1d8ChAfkT6N2/e7N69e9OmTQ8ePEiYt3fv3i1atFi7du3u3bvDClf6FiNGDF7jm6tVq+bnuRU8ChDJ1qpVi82aPJk9ezabmoQJE8rL/fr1+/vvv40pJ4mkyh9myJCBiBj6C5sXNGZIlESkob7K50njvQICrAYvbQDBRXIdIug5c+Yg06RJk4qAkidPriRLHpzFSsWXRAHEv2rUqCETQt6R7xFxk4T4f4xHLxWgNB0wy+e9EZb8jCgAmcoMkA5IH8gICkBhx44dZcuWlb8i9MjL7LRply9fnpAAsbCUKVO63Nm3YcOGjR07lpC9BMjSpk1L0Hj9+vXEBFnc2LX27dvXN914owDjlA1YCNJ7N1RFEI0KUItG69atkSOJWdo9evTg28TwMgO+fv0qMwDMCBJ3/Ua7rFq1ConTrlmzJu8TqIkfP/727dv5cuReoEABSRD5lp/4owKkRyTAt23bdvToUeEwAOCJCLmhHmeAPCeT3LNnT/UO8RYxzrIEMQMwFcB1xDXik/gMAfDGjRvTQECkzgkX83z48OHEkGWNYooQO/PNgJsogESN8MDiefnyZUkgwwCpmwBsXCKpAHmSO3du/hxp0hbZLVu2jPwajfTp05ObPXPmDMkQlnv1AjFhVqqsWbMWKVIEEBWyJnzPc6bIq1ev5N9lypQJd4v5YaECQKkwVgRsydjnocrd0+a1WLFi+dUy+6wAzLJ6wlZApbwFj0Za/+XLl2ID0AQiYE6wrCsFkKU6ffq0sasCwhgyZMjr16/lCbOHsYkDZpUCCMZhV+CfXxH65YnIXWFYaBw6dIiZ4T8d+KAAcB8fP340LkG4N+C3NmzYoFaYdevWSXZBliDML2s6/4JtgXwVyxE/srOTH3PmzCn6QwEvXrxQClAelCUKqFOnDsl6eJb/LvAhI/Hv/J2xiZAC5FdIlpdVZlUetmzZkocyWlmRSK7JDhl/huds32j36dOHNm/SBu91/vx5fsQUA+s8cuSIZEPxo9CuTKNcuXLxAs5V5BWwaNEiGmXKlOEh80AAW2HxlqIScCH+c4oi5AWxFWAQEVpg9cRRYX037qdIvWJ4cV2AobGyi6vDazt37pw4cSLzumTJkrt27WJy8Ca/TZMmDXkSrCIWgtiGSBzUAnlEzAn7DBDB/C2gYDEPEVoTjAro3Lnz0qVLaSRLloxx8/jxYzG8YeGkshBVqFDBdgowxkQ9hjnVdgZXUuWbFLhIXjb+bSigoPLEVUN9v2+YzlAzAAW0bduW7zl16pTHxUfZA1kJ/ecI+RANNYrSIxg/lG7UcyN4LVTgQT00frm84JsxNCoA/xIvC+O/cuVKo+ENK32BL9rXDXV5DQmxSYxLoEEyqEeNGhWe9GVCsAdUMRKdD7CmX5h99h80GjZsKIIOa3jFGFy7dk0sjb8DEl4qIKrNyOUdLgg3l2AD/tW7d+88Gl55wt67cOHCgRl8wToDlA5SpUol0OiwhpfZIApgfgQMK+eNAugJ8UsCZ2nsQXAii/UfTRH7CRxfc8PL1s++4WiVjySC6HEK+5+Eh4IFC3qzZ5wxY4a59NmIBBgL680MYG4S3ydcXNUGBLqN/Bq7DRN3RbpAAtXc7SEKLfHBQHpuwWcDhH/0hOglzuxxDhEWpSQi8FDwwCrA5wK08MasSDN79uwEB03iDeSIJN4Q+NHmjQLoLbFMwjWlSpUqbRHxVYRICYJauALI9xDmM4k3yEM2aHYpEfDGCMPogQMHYJ1I/VuLiKwL/5G4nlWCiPKbyDqYG16Cr7arD/jjDGCXSBwxraVEMFWgFRZ2hHMKzKW/detWyVjYpQglOIywzCGyDuHFG2TloYybvBt5UAEPBJsCFB7Le7JkGArDxYsXpwrV47EW8oQC0OxuYjkVhJJjwLlICsQDoVryKpM8EWAeEq046f6fQKrGjZxzeG6PPJT0J8kfkvKOqZBRaRbywPv37ydgu9MTkSCjxB6oqP+9WJc7Iw3ey3zPNXDgQJe7Fhrjj6psVIvoaBsgA5mjUswNL+kwlxvwQjfv3bvnyPoAvy3oEeVcUHgmYx+8HoxxYg1tFsmHDx/qAg3L3B4QK0jZJN5w//590F28uXnzZl0hYzHPgF8ovw7P8PIJhLto0aIoAGAkOz6tACsNL+68wIpM4g3iFJw7d27AgAEAT7UCXFbFG7A3gIvM0SWg5Hm/VatWggvSRXpWcgtUy9zt4ZggSZkBvdZVkhYbXhnUJisPaw4LlAhXl6lazCdBbJCjHuMNYooB9mKcXb8x2FoBVm64CMfKgYLhpVl4rooJdKG2xW4PdRME0cwNr2DfhX+tAIsVIPhyE8MrFU4qwasVYCV7Uu1tIv19+/YBnTfKVCvAsqWfrWx451eLMaDoDrRWKHyDVoBlvBHF9Dj8RfokYaQe1uMJC1oBkV3648SJA7w5rOfz4zdxeIhHnrUCrGEM+YYnfdwhORY9vGoRrQALZgAgBqPrqYpJ+TSHNGsFWGB+8+XLB4RN7bO+u0nWfVl5TABFWgFWBt2U6NEHFd4ZM2b8I59aAZFdfCgEF0y88n/IanGogZfXwmgFRJYlQVmJ9MGRC5ZWfusNnlkrILK0Z88eWOIyFVwdVc3qPW9aAZHih3oQ6tkRnAQYIiR6rQALDABoeBVd8I0frQBrajd8lpFWgDWXyeljK1365FytgH+AAv5RFzhQOG87eLpcYSJnugWTAuTWHq4wIWUmV5gQ0rDXFSYyFvD5YBSwn43mpnWX+IDhBa6iLvGR7LFdxlkQX2PFIWnkMu1+jVWoi9y4dijoL3KT43ptNMiC+ypDoNF2v8owVJEtyFaJODpRB+ocOooG6QtHmTrgMk9jBlzYpSRP2QYnXmc7ePBgeoHEQ11ny4bAvm6esE4Rs7rQmVM/VfbjL3uTCl1Qgc39EpJGZrknd09GQeqHZZfjgEu1OUADjw2O2TFyxK/5yTy2Ao9yxq5wrg7GVVeaU+Fs9yvNjToAX8/5yQIGYSKzjeTkR5zo2vYjgijEGzCtXHEj6XsMr/FkYsoiJYPv/zpO33UgauD4YWrb5LzBsLBAmxOjh7sBuLRADmV3kDFzhcp6Ywkorw0JCWEXM9l+RABRDlCgzTk0nP3N4dVstQoVKqRORXFqcMXL9LfNu+D4sIqMIDyNaM4h4dalSZMmTZo0adKkSZMmTZo0adKkSZMmTZo0adKkKRjof0v4MhelggrFAAAAAElFTkSuQmCC">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============ 启动画面（v3.1.2：HTML/CSS 就绪即刻显示，JS 就绪后淡出） ============ -->
+  <div id="bootSplash" aria-hidden="true">
+    <div class="boot-logo"><img src="data/logo.png" alt="Token"></div>
+    <div class="boot-spin"></div>
+  </div>
+
+  <!-- ============ 统一线稿图标库（stroke 继承 currentColor） ============ -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 10.8 12 3.2l9 7.6"/><path d="M5.4 9.6V20.8h13.2V9.6"/><path d="M9.8 20.8v-5.4h4.4v5.4"/></symbol>
+      <symbol id="ic-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+      <symbol id="ic-book-open" viewBox="0 0 24 24"><path d="M2.5 4.5H8a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2.5z"/><path d="M21.5 4.5H16a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h6.5z"/></symbol>
+      <symbol id="ic-edit" viewBox="0 0 24 24"><path d="M11.5 4.5H4.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7"/><path d="M18.4 2.8a2.1 2.1 0 0 1 3 3L12.4 14.8l-4.2 1.2 1.2-4.2z"/></symbol>
+      <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+      <symbol id="ic-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+      <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 8 12 3 17 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+      <symbol id="ic-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+      <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+      <symbol id="ic-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+      <symbol id="ic-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+      <symbol id="ic-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+      <symbol id="ic-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2.5 6 12 13 21.5 6"/></symbol>
+      <symbol id="ic-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/><line x1="11" y1="8.2" x2="11" y2="13.8"/><line x1="8.2" y1="11" x2="13.8" y2="11"/></symbol>
+      <symbol id="ic-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/><line x1="8.2" y1="11" x2="13.8" y2="11"/></symbol>
+      <symbol id="ic-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+      <symbol id="ic-cap" viewBox="0 0 24 24"><path d="M2 9.2 12 4l10 5.2-10 5.2z"/><path d="M6.2 11.4v4.4c0 1.7 2.6 3.1 5.8 3.1s5.8-1.4 5.8-3.1v-4.4"/><path d="M22 9.2v4.6"/></symbol>
+      <symbol id="ic-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <!-- ============ 侧边栏（桌面端） ============ -->
+    <aside class="sidebar">
+      <!-- 个人中心入口：位于每页左上角 -->
+      <button class="user-entry" id="avatarBtn" aria-label="打开个人中心">
+        <span class="avatar-face avatar-face-lg" id="avatarInitial">词</span>
+        <span class="user-entry-mid">
+          <span class="user-entry-name" id="userNameSide">词友</span>
+          <span class="user-entry-sub" id="userBookName">大学英语四级</span>
+        </span>
+        <span class="user-entry-more" aria-hidden="true">›</span>
+      </button>
+
+      <div class="book-selector">
+        <label class="book-selector-label">当前词书</label>
+        <select id="bookSelect" class="book-select"></select>
+      </div>
+
+      <nav class="nav nav-main" aria-label="主导航">
+        <div class="nav-sep" aria-hidden="true"><span>学习</span></div>
+        <a class="nav-item active" data-view="home"><span class="nav-icon"><svg class="ic"><use href="#ic-home"/></svg></span>首页</a>
+        <a class="nav-item" data-view="course"><span class="nav-icon"><svg class="ic"><use href="#ic-cap"/></svg></span>课程</a>
+        <a class="nav-item" data-view="rote"><span class="nav-icon"><svg class="ic"><use href="#ic-zap"/></svg></span>速记</a>
+        <a class="nav-item" data-view="study"><span class="nav-icon"><svg class="ic"><use href="#ic-book-open"/></svg></span>学习</a>
+        <a class="nav-item" data-view="library"><span class="nav-icon"><svg class="ic"><use href="#ic-book"/></svg></span>词库</a>
+      </nav>
+
+      <div class="nav-sep nav-sep-pin" aria-hidden="true"><span>工具</span></div>
+
+      <nav class="nav nav-sub" aria-label="次级导航">
+        <a class="nav-item" data-view="stats"><span class="nav-icon"><svg class="ic"><use href="#ic-chart"/></svg></span>学习统计</a>
+        <a class="nav-item" data-view="import"><span class="nav-icon"><svg class="ic"><use href="#ic-upload"/></svg></span>导入词书</a>
+        <a class="nav-item" data-view="settings"><span class="nav-icon"><svg class="ic"><use href="#ic-gear"/></svg></span>设置</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="today-mini">
+          <div class="today-mini-title">今日进度</div>
+          <div class="today-mini-nums"><span id="miniDone">0</span> / <span id="miniTotal">0</span></div>
+          <div class="today-mini-bar"><div id="miniBar" class="today-mini-fill"></div></div>
+        </div>
+        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.2.1</span></div>
+      </div>
+    </aside>
+
+    <!-- ============ 主内容 ============ -->
+    <main class="main">
+      <!-- ---------- 首页 ---------- -->
+      <section id="view-home" class="view active">
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title" id="greetTitle">你好，今天也要加油背单词</h1>
+          <button id="bookSelectMobileBtn" class="book-select book-select-compact" aria-label="切换词书" aria-haspopup="dialog">大学英语四级</button>
+        </div>
+        <div class="exam-card hidden" id="examCard"></div>
+        <div class="book-panel" id="homeBookPanel">
+          <button class="book-panel-head" id="homeBookPanelHead" aria-expanded="false" aria-controls="homeBookPanelBody">
+            <span class="book-panel-label">我的词书</span>
+            <span class="book-panel-count" id="homeBookPanelCount">0</span>
+            <span class="book-panel-cur" id="homeBookPanelCur"></span>
+            <svg class="book-panel-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="book-panel-body" id="homeBookPanelBody">
+            <div class="book-panel-inner">
+              <div class="book-switcher" id="homeBookSwitcher"></div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="homeTotalWords">0</div>
+            <div class="stat-label">词库总量</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num accent-green" id="homeLearned">0</div>
+            <div class="stat-label">已学习</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num accent-orange" id="homeReviewing">0</div>
+            <div class="stat-label">复习中</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num accent-blue" id="homeMastered">0</div>
+            <div class="stat-label">已掌握</div>
+          </div>
+        </div>
+
+        <div class="home-columns">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>今日任务</h2>
+              <span class="panel-badge" id="homeDueBadge"></span>
+            </div>
+            <div class="task-breakdown" id="homeTaskBreakdown"></div>
+            <div class="goal-row">
+              <span class="goal-label">每日新词</span>
+              <button class="goal-btn" id="goalMinus" aria-label="减少">−</button>
+              <span class="goal-value" id="goalValue">20</span>
+              <button class="goal-btn" id="goalPlus" aria-label="增加">＋</button>
+              <span class="goal-hint">个 / 天</span>
+            </div>
+            <button class="btn btn-primary btn-block" id="homeStartBtn">开始今日学习</button>
+            <button class="btn btn-outline btn-block mistake-btn" id="mistakeBtn">复习错词本（<span id="mistakeCount">0</span>）</button>
+            <button class="btn btn-outline btn-block mistake-btn" id="homeRoteBtn">进入速记模式</button>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>词书概况</h2></div>
+            <div id="homeBookOverview" class="book-overview"></div>
+
+            <div class="panel-head panel-head-sub">
+              <h2>学习概况</h2>
+              <button class="link-btn" data-view="stats">详细统计 ›</button>
+            </div>
+            <div class="mini-stats" id="homeMiniStats"></div>
+            <div class="week-chart" id="homeWeekChart" aria-hidden="true"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 速记（重要板块，紧紧挨着首页） ---------- -->
+      <section id="view-rote" class="view">
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title">速记</h1>
+        </div>
+
+        <!-- 工具条始终置顶（词书跟随当前选择，页内不重复放置切换条） -->
+        <div class="rote-sticky" id="roteSticky">
+          <div class="rote-sticky-top">
+            <div class="rote-progress">
+              <div class="rote-progress-nums"><span id="roteDoneCount">0</span> / <span id="roteTotalCount">0</span> <span id="roteDoneLabel">已标记</span><span class="rote-pageinfo" id="rotePageInfo"></span></div>
+              <div class="rote-progress-bar"><div id="roteProgressFill" class="rote-progress-fill"></div></div>
+            </div>
+          </div>
+          <div class="rote-fold" id="roteFold">
+          <div class="rote-actions">
+            <button class="btn btn-outline" id="roteShuffle">随机打乱</button>
+            <button class="btn btn-outline" id="roteMaskBtn">遮罩 · 关</button>
+            <button class="btn btn-outline" id="roteOnlyUndone">只看未掌握</button>
+            <button class="btn btn-outline" id="roteRestore">恢复顺序</button>
+            <button class="btn btn-outline" id="roteResetChecks">清空标记</button>
+            <button class="btn btn-outline" id="roteCollect">收入不熟词</button>
+          </div>
+          <div class="rote-hint" id="roteHint"><span id="roteHintText">点方框循环标记：✓ 已掌握 → △ 不太熟 → 红圈 不认识。所有操作自动保存。</span><button class="link-btn" id="roteDictation">导出本页默写纸 ›</button></div>
+          </div>
+        </div>
+
+        <div class="rote-list" id="roteList"></div>
+        <div class="rote-pager hidden" id="rotePager"></div>
+      </section>
+
+      <!-- ---------- 课程（v2.8.0） ---------- -->
+      <section id="view-course" class="view">
+        <!-- 课程总览：教材信息 + 单元列表 -->
+        <div id="courseHome">
+          <div class="page-head">
+            <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+            <h1 class="view-title">课程</h1>
+          </div>
+          <div class="course-book" id="courseBookCard"></div>
+          <div class="course-units" id="courseUnits"></div>
+        </div>
+
+        <!-- 单元背诵：速记同款交互 -->
+        <div id="courseStudy" class="hidden">
+          <button class="view-back" id="courseBackBtn">‹ 返回课程</button>
+          <div class="course-unit-head" id="courseUnitHead"></div>
+
+          <div class="course-tabs" id="courseTabs" role="tablist"></div>
+
+          <div class="rote-sticky" id="courseSticky">
+            <div class="rote-sticky-top">
+              <div class="rote-progress">
+                <div class="rote-progress-nums"><span id="courseDoneCount">0</span> / <span id="courseTotalCount">0</span> <span id="courseDoneLabel">已标记</span><span class="rote-pageinfo" id="coursePageInfo"></span></div>
+                <div class="rote-progress-bar"><div id="courseProgressFill" class="rote-progress-fill"></div></div>
+              </div>
+            </div>
+            <div class="rote-fold" id="courseFold">
+            <div class="rote-actions">
+              <button class="btn btn-outline" id="courseShuffle">随机打乱</button>
+              <button class="btn btn-outline" id="courseMaskBtn">遮罩 · 关</button>
+              <button class="btn btn-outline" id="courseOnlyUndone">只看未掌握</button>
+              <button class="btn btn-outline" id="courseRestore">恢复顺序</button>
+              <button class="btn btn-outline" id="courseResetChecks">清空标记</button>
+              <button class="btn btn-outline" id="courseCollect">生词入本</button>
+            </div>
+            <div class="rote-hint" id="courseHint">点方框循环标记：✓ 已掌握 → △ 不太熟 → 红圈 不认识。所有操作自动保存。</div>
+            </div>
+          </div>
+
+          <div class="rote-list" id="courseList"></div>
+          <div class="rote-pager hidden" id="coursePager"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 学习（v3.1.7 合并测验） ---------- -->
+      <section id="view-study" class="view">
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title">学习</h1>
+        </div>
+        <div class="study-subtabs" id="studySubTabs" role="tablist">
+          <button class="study-subtab active" data-sub="study" role="tab" aria-selected="true">学习</button>
+          <button class="study-subtab" data-sub="quiz" role="tab" aria-selected="false">测验</button>
+        </div>
+
+        <div id="studySubStudy">
+        <div id="studyIntro" class="study-intro">
+          <div class="study-plan" id="studyPlan"></div>
+
+          <div class="study-goal-row">
+            <span class="goal-label">每日新词</span>
+            <button class="goal-btn" id="studyGoalMinus" aria-label="减少每日新词">−</button>
+            <span class="goal-value" id="studyGoalValue">20</span>
+            <button class="goal-btn" id="studyGoalPlus" aria-label="增加每日新词">＋</button>
+            <span class="goal-hint">个 / 天</span>
+          </div>
+
+          <div class="study-options">
+            <label><input type="checkbox" id="optAutoPlay" checked> 自动发音</label>
+          </div>
+
+          <div class="study-actions" id="studyActions">
+            <button class="btn btn-primary btn-large" id="studyBeginBtn">开始学习</button>
+            <button class="btn btn-outline btn-large hidden" id="studyResumeBtn"><svg class="ic-play" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 5.9v12.2c0 .95 1.04 1.53 1.85 1.03l9.63-6.1a1.22 1.22 0 0 0 0-2.06L10.35 4.87c-.8-.5-1.85.08-1.85 1.03z"/></svg> 继续上次学习（剩余 <span id="resumeCount">0</span> 词）</button>
+          </div>
+        </div>
+
+        <div id="studyCard" class="study-card hidden">
+          <div class="study-progress">
+            <div class="study-progress-bar"><div id="studyProgressFill" class="study-progress-fill"></div></div>
+            <div class="study-progress-text" id="studyProgressText">0 / 0</div>
+          </div>
+          <div class="flashcard" id="flashcard">
+            <div class="flashcard-inner">
+              <div class="flash-face flash-front">
+                <button class="btn-speaker" id="flashSpeaker" title="发音" aria-label="发音"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+                <div class="flash-word" id="flashWord"></div>
+                <div class="flash-phonetic" id="flashPhonetic"></div>
+                <div class="flash-reveal-hint" id="flashHint">点击卡片或按空格查看释义</div>
+              </div>
+              <div class="flash-face flash-back">
+                <div class="flash-pos" id="flashPos"></div>
+                <div class="flash-meaning" id="flashMeaning"></div>
+                <div class="flash-example hidden" id="flashExample"></div>
+                <div class="flash-example-cn hidden" id="flashExampleCn"></div>
+              </div>
+            </div>
+          </div>
+          <div class="grade-buttons hidden" id="gradeButtons">
+            <button class="btn grade-btn grade-again" data-grade="again">忘记<span class="grade-key">1</span></button>
+            <button class="btn grade-btn grade-hard" data-grade="hard">模糊<span class="grade-key">2</span></button>
+            <button class="btn grade-btn grade-good" data-grade="good">认识<span class="grade-key">3</span></button>
+            <button class="btn grade-btn grade-easy" data-grade="easy">简单<span class="grade-key">4</span></button>
+          </div>
+        </div>
+
+        <div id="studyDone" class="study-done hidden">
+          <div class="done-stamp" aria-hidden="true"><span>习毕</span></div>
+          <h2>今日学习完成！</h2>
+          <p id="studyDoneSummary"></p>
+          <button class="btn btn-primary" data-view="home">返回首页</button>
+        </div>
+        </div>
+
+        <!-- 测验（v3.1.7 移入学习版块，作为子标签） -->
+        <div id="studySubQuiz" class="hidden">
+        <div id="quizSetup" class="panel quiz-setup">
+          <div class="form-row">
+            <label>测试范围</label>
+            <select id="quizScope" class="input">
+              <option value="new">新词</option>
+              <option value="learning">学习中</option>
+              <option value="review">到期复习</option>
+              <option value="all">全部</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>题目数量</label>
+            <select id="quizCount" class="input">
+              <option value="10">10 题</option>
+              <option value="20" selected>20 题</option>
+              <option value="30">30 题</option>
+              <option value="50">50 题</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>题型</label>
+            <select id="quizType" class="input">
+              <option value="word2cn">看词选义</option>
+              <option value="cn2word">看义选词</option>
+              <option value="spell">拼写测试</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="quizStartBtn">开始测验</button>
+          <button class="btn btn-outline hidden" id="quizResumeBtn"><svg class="ic-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 5.9v12.2c0 .95 1.04 1.53 1.85 1.03l9.63-6.1a1.22 1.22 0 0 0 0-2.06L10.35 4.87c-.8-.5-1.85.08-1.85 1.03z"/></svg> 继续上次测验（剩余 <span id="quizResumeCount">0</span> 题）</button>
+        </div>
+
+        <div id="quizArea" class="hidden">
+          <div class="study-progress">
+            <div class="study-progress-bar"><div id="quizProgressFill" class="study-progress-fill"></div></div>
+            <div class="study-progress-text" id="quizProgressText">0 / 0</div>
+          </div>
+          <div class="quiz-question">
+            <div class="quiz-prompt" id="quizPrompt"></div>
+            <div class="quiz-sub" id="quizSub"></div>
+          </div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-spell hidden" id="quizSpell">
+            <input type="text" class="input spell-input" id="spellInput" placeholder="输入英文单词后按回车" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <button class="btn btn-primary" id="spellSubmitBtn">提交</button>
+          </div>
+          <div class="quiz-feedback hidden" id="quizFeedback"></div>
+          <button class="btn btn-primary hidden" id="quizNextBtn">下一题</button>
+        </div>
+
+        <div id="quizResult" class="hidden panel">
+          <h2>测验结果</h2>
+          <div class="quiz-result-nums">
+            <div class="quiz-result-item"><span class="accent-green" id="quizCorrect">0</span> 答对</div>
+            <div class="quiz-result-item"><span class="accent-red" id="quizWrong">0</span> 答错</div>
+            <div class="quiz-result-item"><span id="quizAccuracy">0%</span> 正确率</div>
+          </div>
+          <div class="quiz-review-list" id="quizReviewList"></div>
+          <button class="btn btn-primary" id="quizAgainBtn">再来一组</button>
+        </div>
+        </div>
+      </section>
+
+      <!-- ---------- 词库 ---------- -->
+      <section id="view-library" class="view">
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title">词库</h1>
+        </div>
+        <div class="library-toolbar">
+          <input type="text" id="libSearch" class="input lib-search" placeholder="搜索单词或释义…">
+          <div class="tier-filters" id="tierFilters">
+            <button class="tier-chip active" data-tier="all">全部</button>
+            <button class="tier-chip" data-tier="1">高频</button>
+            <button class="tier-chip" data-tier="2">掌握</button>
+            <button class="tier-chip" data-tier="3">了解</button>
+          </div>
+          <div class="lib-status-filter">
+            <select id="libStatus" class="input">
+              <option value="all">全部状态</option>
+              <option value="new">未学习</option>
+              <option value="learning">学习中</option>
+              <option value="mastered">已掌握</option>
+            </select>
+          </div>
+        </div>
+        <div class="library-count" id="libCount"></div>
+        <div class="word-table-wrap">
+          <table class="word-table">
+            <thead><tr><th>单词</th><th>音标</th><th>释义</th><th>层级</th><th>状态</th></tr></thead>
+            <tbody id="libTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="libPagination"></div>
+      </section>
+
+      <!-- ---------- 学习统计（二级页面） ---------- -->
+      <section id="view-stats" class="view">
+        <button class="view-back" id="viewBackStats" data-view="home">‹ 返回</button>
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title">学习统计</h1>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">连续打卡(天)</div></div>
+          <div class="stat-card"><div class="stat-num accent-green" id="statTotalLearned">0</div><div class="stat-label">累计学习</div></div>
+          <div class="stat-card"><div class="stat-num accent-blue" id="statMastered">0</div><div class="stat-label">已掌握</div></div>
+          <div class="stat-card"><div class="stat-num accent-orange" id="statAccuracy">—</div><div class="stat-label">记忆保持率</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>近 7 天学习量</h2>
+            <span class="panel-badge" id="statTodayBadge"></span>
+          </div>
+          <div class="bar-chart" id="statsDailyChart"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>打卡热力（近 5 周）</h2></div>
+          <div class="heatmap" id="statsHeatmap"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>各词书进度</h2></div>
+          <div id="statsByBook" class="stats-by-book"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>未来复习计划</h2></div>
+          <div id="statsForecast" class="stats-forecast"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>数据备份与恢复</h2></div>
+          <p class="muted panel-desc">学习进度会在每次学习 / 评分后<span class="accent-text">自动保存</span>到本地。为防止换设备或清理浏览器导致丢失，建议定期导出备份。</p>
+          <div class="backup-actions">
+            <button class="btn btn-primary" id="exportBtn">导出进度</button>
+            <button class="btn btn-outline" id="importBtn">导入进度</button>
+            <button class="btn btn-outline" id="clearBtn">清空进度</button>
+            <input type="file" id="importProgressInput" accept=".json,application/json" hidden>
+          </div>
+          <div class="backup-status" id="backupStatus"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 导入词书（二级页面，从设置进入） ---------- -->
+      <section id="view-import" class="view">
+        <button class="view-back" id="viewBackImport" data-view="settings">‹ 返回设置</button>
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title">导入词书</h1>
+        </div>
+        <!-- 补录单词（v3.1.7 提到最前面） -->
+        <div class="panel" id="supplementPanel">
+          <div class="panel-head">
+            <h2>补录单词</h2>
+            <span class="panel-badge">逐个追加</span>
+          </div>
+          <p class="muted panel-desc">输入一个单词，已有词库命中可直接录入；没命中就补上释义。单词会进入你在下方选择的词书。</p>
+          <div class="form-row">
+            <label>录入到词书</label>
+            <div class="supp-book-row">
+              <select id="suppBookSelect" class="input"></select>
+              <button class="link-btn" id="suppNewBookBtn">+ 新建词书</button>
+            </div>
+          </div>
+          <div class="supp-search-row">
+            <input type="text" id="suppWord" class="input" placeholder="输入单词，如 abandon" autocomplete="off" spellcheck="false">
+            <button class="btn btn-primary" id="suppSearchBtn">查找</button>
+          </div>
+          <div class="supp-result" id="suppResult"></div>
+        </div>
+
+        <div class="panel">
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon"><svg class="ic"><use href="#ic-upload"/></svg></div>
+            <div>拖拽文件到这里，或</div>
+            <button class="btn btn-outline" id="pickFileBtn">选择文件</button>
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.md,.markdown,.csv,.tsv,.txt,.json" hidden>
+          </div>
+          <div class="import-tip" id="importTip"></div>
+
+          <div class="paste-import">
+            <div class="paste-head">
+              <span>或直接粘贴单词表</span>
+              <button class="link-btn" id="tplDownloadBtn">下载 Excel 模板</button>
+            </div>
+            <textarea id="pasteArea" class="input paste-area" rows="4" placeholder="从网页词典 / Excel 里复制，粘贴到这里即可&#10;abandon	v.	放弃；抛弃&#10;ability	n.	能力；才能"></textarea>
+            <div class="paste-actions">
+              <button class="btn btn-outline" id="pasteParseBtn">解析粘贴内容</button>
+            </div>
+          </div>
+
+          <!-- 支持格式与示例（v3.1.7 默认折叠） -->
+          <details class="fmt-details">
+            <summary>
+              <span class="fmt-summary-title">支持格式与示例</span>
+              <span class="fmt-summary-sub">xlsx · csv · tsv · md · txt · json</span>
+              <span class="fmt-chev" aria-hidden="true">›</span>
+            </summary>
+            <p class="muted panel-desc">需包含「单词」，可选「音标 / 词性 / 释义 / 例句」。<b>词性会自动归一化并并进释义栏</b>（如 <code>n. 放弃；抛弃</code>），音标带不带 <code>//</code> 都可以。<b>Excel 里所有工作表都会被识别</b>；自动识别不准时还能手动指定每一列。文件编码自动判断（UTF-8 / UTF-16 / GBK）。下方范例可一键复制。</p>
+          <div class="import-examples">
+            <div class="example-card">
+              <div class="example-head">
+                <h4>TXT</h4>
+                <span class="example-note">每行「单词 + 制表符 + 词性 + 释义」</span>
+                <button class="copy-btn" data-copy="txt">复制</button>
+              </div>
+              <pre id="example-txt">abandon	v.	放弃；抛弃
+ability	n.	能力；才能</pre>
+            </div>
+            <div class="example-card">
+              <div class="example-head">
+                <h4>CSV</h4>
+                <span class="example-note">首行表头，列顺序随意</span>
+                <button class="copy-btn" data-copy="csv">复制</button>
+              </div>
+              <pre id="example-csv">单词,音标,词性,释义
+abandon,/ə'bændən/,v.,放弃；抛弃
+ability,ə'bɪləti,n.,能力；才能</pre>
+            </div>
+            <div class="example-card">
+              <div class="example-head">
+                <h4>Markdown</h4>
+                <span class="example-note">表格 或 列表形式</span>
+                <button class="copy-btn" data-copy="md">复制</button>
+              </div>
+              <pre id="example-md">| 单词 | 音标 | 词性 | 释义 |
+| --- | --- | --- | --- |
+| abandon | /ə'bændən/ | v. | 放弃；抛弃 |
+| ability | /ə'bɪləti/ | n. | 能力；才能 |
+
+- abandon /ə'bændən/ v. 放弃；抛弃</pre>
+            </div>
+            <div class="example-card">
+              <div class="example-head">
+                <h4>JSON</h4>
+                <span class="example-note">对象数组</span>
+                <button class="copy-btn" data-copy="json">复制</button>
+              </div>
+              <pre id="example-json">[{"w":"abandon","p":"ə'bændən","pos":"v.","m":"放弃；抛弃"},
+ {"w":"ability","p":"ə'bɪləti","pos":"n.","m":"能力；才能"}]</pre>
+            </div>
+            <div class="example-card">
+              <div class="example-head">
+                <h4>Excel</h4>
+                <span class="example-note">所有工作表都会被读取</span>
+                <button class="copy-btn" data-copy="xlsx">复制</button>
+              </div>
+              <pre id="example-xlsx">表头写「单词 / 音标 / 词性 / 释义 / 例句」即可，
+顺序随意，列多列少都行；一个文件里的
+Sheet1、Sheet2… 可合并成一本，也可各自成书。
+不确定怎么写？点下方「下载 Excel 模板」。</pre>
+            </div>
+          </div>
+          </details>
+        </div>
+
+        <!-- 导出词库（v2.7.1） -->
+        <div class="panel" id="exportPanel">
+          <div class="panel-head">
+            <h2>导出词库</h2>
+            <span class="panel-badge">随时带走</span>
+          </div>
+          <p class="muted panel-desc">把词书导出为 Excel 或 CSV，备份、换设备、分享都方便；格式与导入一致，随时可再导回。补录进内置词书的单词也会一并导出。</p>
+          <div class="form-row">
+            <label>导出范围</label>
+            <select id="exportBookSelect" class="input"></select>
+          </div>
+          <div class="paste-actions">
+            <button class="btn btn-primary" id="exportXlsxBtn">导出 Excel（.xlsx）</button>
+            <button class="btn btn-outline" id="exportCsvBtn">导出 CSV（.csv）</button>
+          </div>
+        </div>
+
+        <!-- 管理词表（v2.7.2） -->
+        <div class="panel" id="managePanel">
+          <div class="panel-head">
+            <h2>管理词表</h2>
+            <span class="panel-badge" id="manageCount"></span>
+          </div>
+          <p class="muted panel-desc">查看并删除词书里的单词：自建词书管理全部单词，内置词书可删除补录进去的单词（原始词不可删）。删除「我的词书」里的单词也可点对应词书下的「单词」按钮直达。</p>
+          <div class="form-row">
+            <label>选择词书</label>
+            <select id="manageBookSelect" class="input"></select>
+          </div>
+          <div class="supp-search-row">
+            <input type="text" id="manageFilter" class="input" placeholder="输入单词或释义过滤（可选）" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="mg-list" id="manageList"></div>
+        </div>
+
+        <!-- 多工作表选择 -->
+        <div class="panel hidden" id="sheetPickerPanel">
+          <div class="panel-head">
+            <h2>选择工作表</h2>
+            <span class="panel-badge" id="sheetPickerCount"></span>
+          </div>
+          <p class="muted panel-desc">检测到该 Excel 含有多个工作表，勾选要导入的，再选择导入方式。</p>
+          <div class="sheet-list" id="sheetList"></div>
+          <div class="import-preview-actions">
+            <button class="btn btn-primary" id="sheetMergeBtn">合并为一个词书</button>
+            <button class="btn btn-outline" id="sheetSplitBtn">按工作表分别导入</button>
+            <button class="btn btn-ghost" id="sheetCancelBtn">取消</button>
+          </div>
+        </div>
+
+        <div class="panel hidden" id="importPreviewPanel">
+          <div class="panel-head">
+            <h2>导入预览</h2>
+            <span class="panel-badge" id="importPreviewCount"></span>
+          </div>
+          <div class="form-row">
+            <label>词书名称</label>
+            <input type="text" id="importName" class="input" placeholder="例如：我的错词本">
+          </div>
+          <div class="import-map hidden" id="importMapWrap">
+            <div class="import-map-head">
+              <div class="import-map-title">字段映射<span class="import-map-summary" id="importMapSummary"></span></div>
+              <button class="link-btn" id="importMapToggle">展开调整</button>
+            </div>
+            <div class="import-map-grid hidden" id="importMapGrid"></div>
+          </div>
+          <div class="import-match-tip hidden" id="importMatchTip"></div>
+          <div class="import-preview-table">
+            <table class="word-table">
+              <thead><tr><th>单词</th><th>音标</th><th>释义（含词性）</th><th>例句</th></tr></thead>
+              <tbody id="importPreviewBody"></tbody>
+            </table>
+          </div>
+          <div class="import-preview-actions">
+            <button class="btn btn-primary" id="importConfirmBtn">确认导入</button>
+            <button class="btn btn-outline" id="importCancelBtn">取消导入</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>我的词书</h2></div>
+          <div id="customLists" class="custom-lists"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 设置（二级页面） ---------- -->
+      <section id="view-settings" class="view">
+        <button class="view-back" id="viewBackSettings" data-view="home">‹ 返回</button>
+        <div class="page-head">
+          <button class="avatar-btn page-avatar" data-drawer aria-label="打开个人中心"><span class="avatar-face" data-avatar-initial>词</span></button>
+          <h1 class="view-title">设置</h1>
+        </div>
+
+        <div class="set-grid">
+        <div class="set-group">
+          <div class="set-group-title">账户与同步</div>
+          <div class="set-card">
+            <!-- 未登录：邮箱 + 密码 / 验证码 -->
+            <div id="acctLoggedOut">
+              <div class="set-row acct-intro">
+                <div class="set-main">
+                  <div class="set-label">登录后云端同步</div>
+                  <div class="set-desc">设置、学习进度、自建词书与个人资料自动备份到云端，换设备登录即恢复；不登录也能继续离线使用</div>
+                </div>
+                <span class="acct-badge">未登录</span>
+              </div>
+              <div class="acct-form" id="acctLoginPanel">
+                <label class="acct-field">
+                  <span class="acct-field-label">邮箱</span>
+                  <input class="input" id="acctEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" spellcheck="false">
+                </label>
+                <label class="acct-field" id="acctPwdField">
+                  <span class="acct-field-label">密码</span>
+                  <input class="input" id="acctPwd" type="password" autocomplete="current-password" placeholder="至少 6 位">
+                </label>
+                <div class="acct-actions">
+                  <button class="btn btn-primary" id="acctLoginBtn" type="button">登录</button>
+                  <button class="btn btn-outline" id="acctSignupBtn" type="button">注册新账号</button>
+                </div>
+                <div class="acct-foot">
+                  <button class="acct-link" id="acctModeBtn" type="button">忘记密码？</button>
+                  <span class="acct-hint" id="acctHint"></span>
+                </div>
+              </div>
+
+              <!-- v3.2.1：忘记密码 —— 邮箱验证码验证后重设密码（不再需要旧密码） -->
+              <div class="acct-form hidden" id="acctResetPanel">
+                <div class="acct-reset-tip">用注册邮箱收一封验证码，验证通过后即可设置新密码。</div>
+                <label class="acct-field">
+                  <span class="acct-field-label">邮箱</span>
+                  <input class="input" id="acctResetEmail" type="email" inputmode="email" autocomplete="email" placeholder="注册时用的邮箱" spellcheck="false">
+                </label>
+                <label class="acct-field">
+                  <span class="acct-field-label">验证码</span>
+                  <span class="acct-code-row">
+                    <input class="input" id="acctResetCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="邮箱里的 6 位数字">
+                    <button class="btn btn-outline acct-send" id="acctResetSend" type="button">发送验证码</button>
+                  </span>
+                </label>
+                <label class="acct-field">
+                  <span class="acct-field-label">新密码</span>
+                  <input class="input" id="acctResetPwd" type="password" autocomplete="new-password" placeholder="至少 6 位">
+                </label>
+                <label class="acct-field">
+                  <span class="acct-field-label">确认新密码</span>
+                  <input class="input" id="acctResetPwd2" type="password" autocomplete="new-password" placeholder="再输入一次">
+                </label>
+                <div class="acct-actions">
+                  <button class="btn btn-primary" id="acctResetBtn" type="button">重设密码并登录</button>
+                </div>
+                <div class="acct-foot">
+                  <button class="acct-link" id="acctResetBack" type="button">‹ 返回登录</button>
+                  <span class="acct-hint" id="acctResetHint"></span>
+                </div>
+              </div>
+            </div>
+            <!-- 已登录 -->
+            <div id="acctLoggedIn" class="hidden">
+              <div class="acct-user">
+                <span class="acct-dot" id="acctDot"></span>
+                <div class="acct-user-main">
+                  <div class="set-label" id="acctEmailShow">—</div>
+                  <div class="set-desc" id="acctStatus">尚未同步</div>
+                </div>
+              </div>
+              <div class="acct-actions">
+                <button class="btn btn-primary" id="acctSyncBtn" type="button">立即同步</button>
+                <button class="btn btn-outline" id="acctSignoutBtn" type="button">退出登录</button>
+              </div>
+              <div class="set-row">
+                <div class="set-main">
+                  <div class="set-label">自动同步</div>
+                  <div class="set-desc">学习进度有改动后自动上传（约 4 秒内）</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="acctAutoSync" checked>
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+              <button class="set-link" id="acctPullBtn" type="button">
+                <span class="set-link-icon"><svg class="ic"><use href="#ic-download"/></svg></span>
+                <span class="set-link-main"><span class="set-label">用云端数据覆盖本机</span><span class="set-desc">云端记录比本机新时，一键恢复到本机</span></span>
+                <span class="set-link-arrow">›</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-title">个人资料</div>
+          <div class="set-card">
+            <div class="profile-row">
+              <button class="profile-avatar-btn" id="setAvatarBtn" title="更换头像" aria-label="更换头像">
+                <span class="avatar-face avatar-face-lg" id="setAvatarFace">词</span>
+                <span class="profile-avatar-edit" aria-hidden="true"><svg class="ic"><use href="#ic-camera"/></svg></span>
+              </button>
+              <div class="profile-avatar-mid">
+                <div class="set-label">头像</div>
+                <div class="set-desc">支持 JPG / PNG / WebP，自动压缩保存</div>
+                <div class="profile-avatar-actions">
+                  <button class="link-btn" id="setAvatarChange">更换头像</button>
+                  <button class="link-btn danger hidden" id="setAvatarRemove">移除头像</button>
+                </div>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">昵称</div>
+                <div class="set-desc">显示在个人中心与首页</div>
+              </div>
+              <input type="text" id="setUserName" class="input input-compact" maxlength="12" placeholder="词友">
+            </div>
+            <div class="set-row set-row-col">
+              <div class="set-main">
+                <div class="set-label">个人简介</div>
+                <div class="set-desc">一句话介绍自己，显示在个人中心（可选）</div>
+              </div>
+              <textarea id="setUserBio" class="input profile-bio" maxlength="60" rows="2" placeholder="例如：四级备考中，目标 550 分"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-title">外观</div>
+          <div class="set-card">
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">主题</div>
+                <div class="set-desc">深色为 OLED 纯黑配色，跟随系统将随系统昼夜自动切换</div>
+              </div>
+              <div class="seg-group" id="themeSeg">
+                <button class="seg-btn" id="themeAuto">跟随系统</button>
+                <button class="seg-btn" id="themeLight">浅色</button>
+                <button class="seg-btn" id="themeDark">深色</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-title">学习设置</div>
+          <div class="set-card">
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">每日新词目标</div>
+                <div class="set-desc">每天计划学习的新单词数量</div>
+              </div>
+              <div class="stepper">
+                <button class="goal-btn" id="setGoalMinus" aria-label="减少">−</button>
+                <span class="goal-value" id="setGoalValue">20</span>
+                <button class="goal-btn" id="setGoalPlus" aria-label="增加">＋</button>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">考试倒计时（v2.9.0）</div>
+                <div class="set-desc">设置后首页显示倒计时，并按剩余天数与词量推荐每日新词量（预留复习余量）</div>
+              </div>
+              <div class="exam-setting">
+                <input type="text" class="input input-compact" id="setExamName" placeholder="考试名" maxlength="12">
+                <input type="date" class="input input-compact" id="setExamDate" aria-label="考试日期">
+                <button class="btn btn-outline" id="setExamClear" title="清除倒计时">清除</button>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">自动发音</div>
+                <div class="set-desc">进入新卡片时自动朗读单词</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setAutoPlay" checked>
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">发音语速</div>
+                <div class="set-desc">朗读速度，越慢越清晰</div>
+              </div>
+              <select id="setSpeechRate" class="input input-compact">
+                <option value="0.7">很慢</option>
+                <option value="0.85">偏慢</option>
+                <option value="1">正常</option>
+                <option value="1.15">偏快</option>
+              </select>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">学习时显示例句</div>
+                <div class="set-desc">翻卡后一并展示例句与翻译</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setShowExample" checked>
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">速记打乱保留已掌握在末尾</div>
+                <div class="set-desc">关闭后打乱会把全部单词混在一起</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setRoteSinkChecked" checked>
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">速记每页词数</div>
+                <div class="set-desc">分页渲染更省内存，翻页后遮罩自动重置</div>
+              </div>
+              <div class="page-size-edit">
+                <input type="number" id="setRotePageSize" class="input input-compact page-size-num" min="10" max="1000" step="10">
+                <span class="page-size-label">个/页（10–1000）</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-title">词书管理</div>
+          <div class="set-card">
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">当前词书</div>
+                <div class="set-desc">学习 / 测验 / 词库使用的默认词书</div>
+              </div>
+              <select id="setBookSelect" class="input input-compact"></select>
+            </div>
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">自建词书角标（v3.0.0）</div>
+                <div class="set-desc">首页词书标签前的小字：01、02… 自动编号 / 「自建」/ 不显示</div>
+              </div>
+              <select id="setBadgeMode" class="input input-compact">
+                <option value="number">自动编号</option>
+                <option value="legacy">「自建」</option>
+                <option value="hidden">不显示</option>
+              </select>
+            </div>
+            <button class="set-link" id="setImportBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-upload"/></svg></span>
+              <span class="set-link-main"><span class="set-label">导入词书</span><span class="set-desc">从 Excel / CSV / TXT / JSON 导入</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
+            <div class="set-sub">
+              <div class="set-sub-title">我的词书</div>
+              <div id="setListsBox" class="custom-lists"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-title">数据</div>
+          <div class="set-card">
+            <button class="set-link" id="setStatsBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-chart"/></svg></span>
+              <span class="set-link-main"><span class="set-label">学习统计</span><span class="set-desc">查看学习量、打卡热力与各词书进度</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
+            <button class="set-link" id="setExportBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-download"/></svg></span>
+              <span class="set-link-main"><span class="set-label">导出学习进度</span><span class="set-desc">生成 JSON 备份文件，可跨设备恢复</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
+            <button class="set-link" id="setImportProgressBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-upload"/></svg></span>
+              <span class="set-link-main"><span class="set-label">导入学习进度</span><span class="set-desc">从备份文件恢复，与现有进度合并</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
+            <input type="file" id="setImportProgressInput" accept=".json,application/json" hidden>
+            <button class="set-link danger" id="setClearBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-x"/></svg></span>
+              <span class="set-link-main"><span class="set-label">清空所有进度</span><span class="set-desc">不可撤销，建议先导出备份</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
+            <div class="backup-status" id="setBackupStatus"></div>
+          </div>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-title">关于</div>
+          <div class="set-card">
+            <div class="set-row">
+              <div class="set-main">
+                <div class="set-label">版本</div>
+                <div class="set-desc" id="aboutVersion">Token v2.9.2</div>
+              </div>
+            </div>
+            <button class="set-link" id="changelogToggle">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-edit"/></svg></span>
+              <span class="set-link-main"><span class="set-label">版本说明</span><span class="set-desc">查看本次大版本更新的全部内容</span></span>
+              <span class="set-link-arrow" id="changelogArrow">›</span>
+            </button>
+            <div class="changelog hidden" id="changelogBox"></div>
+            <div class="set-row set-row-plain">
+              <div class="set-main">
+                <div class="set-label">词库数据来源</div>
+                <div class="set-desc">内置词库来自开源词库项目（kajweb/dict），考试频率取自公开真题词频统计。不登录时全部数据只保存在本机；登录账号后，设置与学习记录会通过 Supabase 同步到你的私有云端空间（仅本人可读写）。</div>
+              </div>
+            </div>
+
+            <!-- 作者的话 -->
+            <div class="author-note">
+              <div class="author-note-head">
+                <span class="author-note-mark" aria-hidden="true">✎</span>
+                <span class="author-note-title">作者的话</span>
+              </div>
+              <p class="author-note-body">本应用由本人提出想法，由 AI 辅助生成。用户如有任何意见或建议，请联系：</p>
+              <div class="author-mail">
+                <svg class="ic author-mail-icon" aria-hidden="true"><use href="#ic-mail"/></svg>
+                <span class="author-mail-addr" id="authorMail">YJH_9999@163.com</span>
+                <button class="copy-btn" id="copyMailBtn">复制</button>
+              </div>
+              <p class="author-note-body">作者会尽力更新！感谢使用本应用！</p>
+            </div>
+          </div>
+        </div>
+        </div><!-- /.set-grid -->
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ 移动端底部导航（5 项核心） ============ -->
+  <nav class="mobile-nav" aria-label="移动端导航">
+    <a class="nav-item active" data-view="home"><span class="nav-icon"><svg class="ic"><use href="#ic-home"/></svg></span><span class="nav-text">首页</span></a>
+    <a class="nav-item" data-view="course"><span class="nav-icon"><svg class="ic"><use href="#ic-cap"/></svg></span><span class="nav-text">课程</span></a>
+    <a class="nav-item" data-view="rote"><span class="nav-icon"><svg class="ic"><use href="#ic-zap"/></svg></span><span class="nav-text">速记</span></a>
+    <a class="nav-item" data-view="study"><span class="nav-icon"><svg class="ic"><use href="#ic-book-open"/></svg></span><span class="nav-text">学习</span></a>
+    <a class="nav-item" data-view="library"><span class="nav-icon"><svg class="ic"><use href="#ic-book"/></svg></span><span class="nav-text">词库</span></a>
+  </nav>
+
+  <!-- ============ 个人中心抽屉 ============ -->
+  <div class="drawer-mask" id="drawerMask" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-label="个人中心" aria-hidden="true">
+    <div class="drawer-head">
+      <button class="drawer-avatar-btn" id="drawerAvatarBtn" title="更换头像" aria-label="更换头像">
+        <span class="avatar-face avatar-face-xl" id="drawerInitial">词</span>
+        <span class="drawer-avatar-edit" aria-hidden="true"><svg class="ic"><use href="#ic-camera"/></svg></span>
+      </button>
+      <div class="drawer-head-mid">
+        <div class="drawer-name-row">
+          <input type="text" id="drawerName" class="drawer-name-input" maxlength="12" aria-label="昵称" placeholder="点击修改昵称">
+          <button class="drawer-rename" id="drawerRenameBtn" title="保存昵称" aria-label="保存昵称">✎</button>
+        </div>
+        <div class="drawer-sub" id="drawerBookName">大学英语四级</div>
+        <div class="drawer-bio hidden" id="drawerBio"></div>
+        <button class="drawer-account" id="drawerAccountBtn" type="button">
+          <span class="da-dot" id="drawerAcctDot"></span>
+          <span class="da-text" id="drawerAccountText">未登录 · 点此开启云端同步</span>
+        </button>
+      </div>
+      <button class="drawer-close" id="drawerCloseBtn" aria-label="关闭">✕</button>
+    </div>
+
+    <div class="drawer-today">
+      <div class="drawer-today-head">
+        <span>今日进度</span>
+        <span class="drawer-today-nums"><b id="drawerTodayDone">0</b> / <span id="drawerTodayTotal">0</span></span>
+      </div>
+      <div class="drawer-today-bar"><div id="drawerTodayFill" class="drawer-today-fill"></div></div>
+      <div class="drawer-streak" id="drawerStreak">连续打卡 0 天</div>
+    </div>
+
+    <div class="drawer-stats" id="drawerStats">
+      <div class="drawer-stat"><div class="ds-num" id="dLearned">0</div><div class="ds-lbl">累计学习</div></div>
+      <div class="drawer-stat"><div class="ds-num accent-blue" id="dMastered">0</div><div class="ds-lbl">已掌握</div></div>
+      <div class="drawer-stat"><div class="ds-num accent-green" id="dAccuracy">—</div><div class="ds-lbl">保持率</div></div>
+      <div class="drawer-stat"><div class="ds-num accent-plum" id="dUsageToday">—</div><div class="ds-lbl">今日用时</div></div>
+    </div>
+    <div class="drawer-usage" id="drawerUsage"><span>累计使用时长</span><b id="dUsageTotal">—</b></div>
+
+    <div class="drawer-section-title">功能</div>
+    <nav class="drawer-nav">
+      <button class="drawer-item" data-view="home"><span class="di-icon"><svg class="ic"><use href="#ic-home"/></svg></span>首页</button>
+      <button class="drawer-item" data-view="course"><span class="di-icon"><svg class="ic"><use href="#ic-cap"/></svg></span>课程</button>
+      <button class="drawer-item" data-view="rote"><span class="di-icon"><svg class="ic"><use href="#ic-zap"/></svg></span>速记</button>
+      <button class="drawer-item" data-view="study"><span class="di-icon"><svg class="ic"><use href="#ic-book-open"/></svg></span>学习</button>
+      <button class="drawer-item" data-view="library"><span class="di-icon"><svg class="ic"><use href="#ic-book"/></svg></span>词库</button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-item" data-view="stats"><span class="di-icon"><svg class="ic"><use href="#ic-chart"/></svg></span>学习统计</button>
+      <button class="drawer-item" data-view="import"><span class="di-icon"><svg class="ic"><use href="#ic-upload"/></svg></span>导入词书</button>
+      <button class="drawer-item" data-view="settings"><span class="di-icon"><svg class="ic"><use href="#ic-gear"/></svg></span>设置</button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-item" id="drawerTutorialBtn"><span class="di-icon"><svg class="ic"><use href="#ic-help"/></svg></span>新手教程</button>
+    </nav>
+
+    <div class="drawer-foot" id="drawerVersion">Token v2.9.2</div>
+  </aside>
+
+  <!-- ============ 首次使用引导（登录界面） ============ -->
+  <div class="onboard-mask" id="onboardMask" aria-hidden="true">
+    <div class="onboard-card" role="dialog" aria-modal="true" aria-label="欢迎设置个人资料">
+      <div class="onboard-brand">
+        <span class="onboard-logo"><img src="data/logo.png" alt="Token"></span>
+        <div class="onboard-brand-text">
+          <div class="onboard-title">欢迎来到 Token</div>
+          <div class="onboard-sub">先来认识一下 · 打造你的专属背单词空间</div>
+        </div>
+      </div>
+
+      <div class="onboard-body">
+        <button class="onboard-avatar" id="obAvatarBtn" aria-label="上传头像">
+          <span class="avatar-face avatar-face-hero" id="obAvatarFace">词</span>
+          <span class="onboard-avatar-edit"><svg class="ic"><use href="#ic-camera"/></svg></span>
+        </button>
+        <div class="onboard-avatar-hint">点击上传头像（可选）</div>
+
+        <label class="onboard-field">
+          <span class="onboard-label">昵称 <i>*</i></span>
+          <input type="text" id="obName" class="input" maxlength="12" placeholder="给自己起个名字，如：阿词" autocomplete="off">
+        </label>
+
+        <label class="onboard-field">
+          <span class="onboard-label">个人简介 <em>（可选）</em></span>
+          <textarea id="obBio" class="input onboard-bio" maxlength="60" rows="2" placeholder="一句话介绍自己，如：四级备考中，目标 550 分"></textarea>
+        </label>
+      </div>
+
+      <div class="onboard-actions">
+        <button class="btn btn-primary onboard-go" id="obDoneBtn">开始背单词</button>
+        <button class="onboard-skip" id="obSkipBtn">暂不设置，直接进入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 头像裁剪 ============ -->
+  <div class="cropper-mask" id="cropperMask" aria-hidden="true">
+    <div class="cropper-card" role="dialog" aria-modal="true" aria-label="裁剪头像">
+      <div class="cropper-head">
+        <span class="cropper-title">裁剪头像</span>
+        <button class="cropper-close" id="cropperCloseBtn" aria-label="取消">✕</button>
+      </div>
+
+      <div class="cropper-stage" id="cropperStage">
+        <canvas id="cropperCanvas" width="300" height="300"></canvas>
+        <div class="cropper-frame" aria-hidden="true"></div>
+        <div class="cropper-hint" id="cropperHint">拖动调整位置 · 滚轮或滑块缩放</div>
+      </div>
+
+      <div class="cropper-tools">
+        <button class="cropper-tool" id="cropperZoomOut" aria-label="缩小"><svg class="ic"><use href="#ic-zoom-out"/></svg></button>
+        <input type="range" id="cropperZoom" class="cropper-range" min="100" max="320" value="100" aria-label="缩放">
+        <button class="cropper-tool" id="cropperZoomIn" aria-label="放大"><svg class="ic"><use href="#ic-zoom-in"/></svg></button>
+        <button class="cropper-tool" id="cropperReset" aria-label="重置"><svg class="ic"><use href="#ic-refresh"/></svg></button>
+      </div>
+
+      <div class="cropper-actions">
+        <button class="btn btn-outline" id="cropperCancelBtn">取消</button>
+        <button class="btn btn-primary" id="cropperOkBtn">确认裁剪</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 头像上传用文件选择（全局共用） -->
+  <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+
+  <!-- ============ 引导式新手教程（v3.1.8：spotlight 挖孔高亮 + 步骤说明卡） ============ -->
+  <div class="tour-mask" id="tourMask" aria-hidden="true">
+    <div class="tour-hole" id="tourHole" aria-hidden="true"></div>
+    <div class="tour-card" id="tourCard" role="dialog" aria-modal="true" aria-label="新手教程">
+      <button class="tour-exit" id="tourExitBtn" aria-label="退出教程">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="tour-step-label" id="tourStepLabel"></div>
+      <div class="tour-title" id="tourTitle"></div>
+      <div class="tour-desc" id="tourDesc"></div>
+      <div class="tour-dots" id="tourDots"></div>
+      <div class="tour-actions">
+        <button class="btn btn-outline" id="tourPrevBtn">上一步</button>
+        <button class="btn btn-primary" id="tourNextBtn">下一步</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 版本更新告知 ============ -->
+  <div class="wn-mask" id="whatsNewMask" aria-hidden="true">
+    <div class="wn-card" role="dialog" aria-modal="true" aria-label="版本更新内容">
+      <div class="wn-head">
+        <span class="wn-badge">UPDATE</span>
+        <div class="wn-ver-wrap">
+          <div class="wn-ver" id="wnVer">v0.0.0 更新</div>
+          <div class="wn-date" id="wnDate"></div>
+        </div>
+        <button class="wn-close" id="wnCloseBtn" aria-label="关闭">✕</button>
+      </div>
+
+      <div class="wn-tabs">
+        <button class="wn-tab active" id="wnTabCurrent">本次更新</button>
+        <button class="wn-tab" id="wnTabHistory">往期版本</button>
+      </div>
+
+      <div class="wn-body" id="wnBody"></div>
+
+      <div class="wn-actions">
+        <button class="btn btn-primary" id="wnOkBtn">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 切换词书：iOS 底部弹层（v3.1.6，移动端顶栏右上角入口） -->
+  <div class="cp-mask" id="bookSheetMask" aria-hidden="true">
+    <div class="cp-card" role="dialog" aria-modal="true" aria-label="切换词书">
+      <div class="cp-title">切换词书</div>
+      <div class="cp-sub" id="bookSheetSub"></div>
+      <div class="cp-list" id="bookSheetList"></div>
+      <button class="btn btn-outline btn-block" id="bookSheetCancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 生词入本：目标词书选择（v2.9.1） -->
+  <div class="cp-mask" id="coursePickMask" aria-hidden="true">
+    <div class="cp-card" role="dialog" aria-modal="true" aria-label="选择目标词书">
+      <div class="cp-title">把生词收入哪本词书？</div>
+      <div class="cp-sub" id="coursePickSub"></div>
+      <div class="cp-list" id="coursePickList"></div>
+      <button class="btn btn-outline btn-block" id="coursePickCancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 胜利分享弹层（v3.0.0）：词书全部学完 / 全部掌握 -->
+  <div class="vt-mask" id="victoryMask" aria-hidden="true" data-type="learned">
+    <div class="vt-confetti" id="victoryConfetti" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="vt-card" role="dialog" aria-modal="true" aria-label="胜利庆祝">
+      <button class="vt-close" id="victoryClose" aria-label="关闭">✕</button>
+      <div class="vt-trophy" id="victoryTrophy">🎉</div>
+      <div class="vt-title" id="victoryTitle">全部学完！</div>
+      <div class="vt-sub" id="victorySub"></div>
+      <div class="vt-divider" aria-hidden="true"><span>✦</span></div>
+      <div class="vt-book">
+        <span class="vt-book-name" id="victoryBookName"></span>
+        <span class="vt-book-count">共 <b id="victoryCount">0</b> 个单词</span>
+      </div>
+      <div class="vt-user">
+        <span class="avatar-face vt-avatar" id="victoryAvatar">词</span>
+        <span class="vt-user-name" id="victoryUser">词友</span>
+      </div>
+      <div class="vt-date" id="victoryDate"></div>
+      <div class="vt-actions">
+        <button class="btn btn-outline" id="victorySave">保存分享图</button>
+        <button class="btn btn-primary" id="victoryCloseBtn">继续加油</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ftoast" id="fileToast" role="status"><span id="fileToastMsg"></span><button class="ftoast-btn" id="fileToastView">查看</button></div>
+
+  <!-- ============ AlertDialog 确认弹窗（v3.1.4：不可逆操作专用，点遮罩/Esc 均不关闭） ============ -->
+  <div class="dlg-mask" id="dlgMask">
+    <div class="dlg-card" role="alertdialog" aria-modal="true" aria-labelledby="dlgTitle" aria-describedby="dlgMsg">
+      <div class="dlg-title" id="dlgTitle">确认操作</div>
+      <div class="dlg-msg" id="dlgMsg"></div>
+      <div class="dlg-btns">
+        <button class="btn btn-outline" id="dlgCancel">取消</button>
+        <button class="btn dlg-ok" id="dlgOk">确定</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <!-- ============ v3.2.0：首次登录的云端/本机冲突选择 ============ -->
+  <div class="sync-choice-mask" id="syncChoiceMask" aria-hidden="true">
+    <div class="sync-choice-card" role="dialog" aria-modal="true" aria-labelledby="syncChoiceTitle">
+      <div class="sync-choice-icon"><svg class="ic"><use href="#ic-refresh"/></svg></div>
+      <div class="sync-choice-title" id="syncChoiceTitle">云端已有你的记录</div>
+      <div class="sync-choice-desc">这台设备上也有数据。选一种方式处理，之后会自动保持同步。</div>
+      <button class="sync-choice-btn primary" data-choice="cloud" type="button">
+        <span class="scb-title">用云端数据覆盖本机</span>
+        <span class="scb-sub">刚换设备、重装后恢复时选这个</span>
+      </button>
+      <button class="sync-choice-btn" data-choice="merge" type="button">
+        <span class="scb-title">合并两边数据</span>
+        <span class="scb-sub">进度取并集，同一个词以云端为准</span>
+      </button>
+      <button class="sync-choice-btn" data-choice="local" type="button">
+        <span class="scb-title">用本机数据覆盖云端</span>
+        <span class="scb-sub">本机才是最新进度时选这个</span>
+      </button>
+      <div class="sync-choice-note">拿不准就选「合并两边数据」，不会丢进度。</div>
+    </div>
+  </div>
+
+  <!-- v3.1.2：核心数据与主脚本 defer 化（不阻塞首帧渲染，执行顺序不变）；
+       xlsx 库（~900KB）移除首屏，改为使用时按需加载（ensureXLSX） -->
+  <script src="lib/supabase.js" defer></script>
+  <script src="sync.js" defer></script>
+  <script src="data/words.js" defer></script>
+  <script src="data/courses.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
