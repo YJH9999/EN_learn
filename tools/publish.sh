@@ -57,7 +57,7 @@ if [ "$PUSH" = "1" ]; then
     # github.com:443 被拦时，git 协议完全走不通；api.github.com 通常还能连，
     # 于是改用 Git Data API 提交同样的内容（按 blob 内容比对，历史分叉也不影响）
     echo "→ git 协议不通，改用 GitHub API 提交 ..."
-    if python "$HERE/tools/push-via-api.py"; then
+    if python "$DEST/tools/push-via-api.py"; then
       echo "✓ 已通过 API 提交"
     else
       echo "✗ 提交失败：内容已保存在本地 commit，联网后在终端执行"

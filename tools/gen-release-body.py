@@ -44,7 +44,7 @@ def load_changelog(app_js=APP_JS):
     return out, order
 
 
-def brief(text, limit=40):
+def brief(text, limit=56):
     """去掉括号补充，过长时在标点处断开 —— 让每行保持一句短话。"""
     t = re.sub(r'（[^）]*）|\([^)]*\)', '', text)
     t = re.sub(r'\s+', ' ', t).strip().rstrip('；;，,。')
