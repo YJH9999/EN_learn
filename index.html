@@ -81,7 +81,7 @@
           <div class="today-mini-nums"><span id="miniDone">0</span> / <span id="miniTotal">0</span></div>
           <div class="today-mini-bar"><div id="miniBar" class="today-mini-fill"></div></div>
         </div>
-        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.2.4</span></div>
+        <div class="streak"><svg class="streak-flame" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c3 4 7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 4-8 7-12z"/></svg> 连续 <span id="miniStreak">0</span> 天<span class="sidebar-ver">v3.3.0</span></div>
       </div>
     </aside>
 
@@ -887,14 +887,14 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
         <div class="set-group">
           <div class="set-group-title">词书管理</div>
           <div class="set-card">
-            <div class="set-row">
+            <div class="set-row set-row-stack">
               <div class="set-main">
                 <div class="set-label">当前词书</div>
                 <div class="set-desc">学习 / 测验 / 词库使用的默认词书</div>
               </div>
               <select id="setBookSelect" class="input input-compact"></select>
             </div>
-            <div class="set-row">
+            <div class="set-row set-row-stack">
               <div class="set-main">
                 <div class="set-label">自建词书角标（v3.0.0）</div>
                 <div class="set-desc">首页词书标签前的小字：01、02… 自动编号 / 「自建」/ 不显示</div>
@@ -905,6 +905,22 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
                 <option value="hidden">不显示</option>
               </select>
             </div>
+            <div class="set-row set-row-stack">
+              <div class="set-main">
+                <div class="set-label">切换词书时同步速记标记</div>
+                <div class="set-desc">新词书里与已背过的词重合时，把 ✓ 已掌握 / △ 不太熟 / 红圈 一并带过来；本书已标过的不会被覆盖</div>
+              </div>
+              <select id="setRoteSyncMode" class="input input-compact">
+                <option value="ask">每次询问</option>
+                <option value="auto">自动同步</option>
+                <option value="off">不同步</option>
+              </select>
+            </div>
+            <button class="set-link" id="setRoteSyncNowBtn">
+              <span class="set-link-icon"><svg class="ic"><use href="#ic-refresh"/></svg></span>
+              <span class="set-link-main"><span class="set-label">立即同步到当前词书</span><span class="set-desc">把其它词书里已背过的速记标记合并进来，随时可再点一次</span></span>
+              <span class="set-link-arrow">›</span>
+            </button>
             <button class="set-link" id="setImportBtn">
               <span class="set-link-icon"><svg class="ic"><use href="#ic-upload"/></svg></span>
               <span class="set-link-main"><span class="set-label">导入词书</span><span class="set-desc">从 Excel / CSV / TXT / JSON 导入</span></span>
@@ -1180,8 +1196,19 @@ Sheet1、Sheet2… 可合并成一本，也可各自成书。
     </div>
   </div>
 
-  <!-- 生词入本：目标词书选择（v2.9.1） -->
-  <div class="cp-mask" id="coursePickMask" aria-hidden="true">
+  <!-- v3.3.0：切词书时的速记标记同步询问 -->
+  <div class="cp-mask" id="roteSyncMask" aria-hidden="true">
+    <div class="cp-card" role="dialog" aria-modal="true" aria-label="同步速记标记">
+      <div class="cp-title" id="roteSyncTitle">同步已背过的速记标记？</div>
+      <div class="cp-sub" id="roteSyncSub"></div>
+      <div class="rs-stats hidden" id="roteSyncStats"></div>
+      <button class="btn btn-primary btn-block" id="roteSyncApply">同步</button>
+      <button class="btn btn-outline btn-block" id="roteSyncSkip">暂不同步</button>
+      <div class="rs-note">之后可在「设置 → 词书管理」切换为自动同步 / 不再同步</div>
+    </div>
+  </div>
+
+  <!-- 生词入本：目标词书选择（v2.9.1） -->  <div class="cp-mask" id="coursePickMask" aria-hidden="true">
     <div class="cp-card" role="dialog" aria-modal="true" aria-label="选择目标词书">
       <div class="cp-title">把生词收入哪本词书？</div>
       <div class="cp-sub" id="coursePickSub"></div>

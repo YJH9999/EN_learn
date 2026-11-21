@@ -409,6 +409,22 @@ html { scrollbar-color: var(--line-strong) transparent; }
   .cp-mask { align-items: center; }
   .cp-card { border-radius: 8px; padding-bottom: 18px; }
 }
+
+/* ===== v3.3.0 切词书 · 速记标记同步询问 ===== */
+#roteSyncMask .btn + .btn { margin-top: 8px; }
+.rs-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.rs-chip {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  font-size: 12px; color: var(--ink-sub);
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--paper); padding: 5px 12px 5px 10px;
+}
+.rs-chip b { font-family: var(--serif); font-size: 15px; font-weight: 700; }
+.rs-chip.done { background: var(--good-soft); border-color: var(--good-soft); }
+.rs-chip.done b { color: var(--good); }
+.rs-chip.half b { color: #b8862f; }
+.rs-chip.seen b { color: var(--accent); }
+.rs-note { font-size: 11px; color: var(--ink-muted); text-align: center; margin-top: 10px; line-height: 1.5; }
 .book-chip {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px;
@@ -963,42 +979,43 @@ html.drag-lock, html.drag-lock body { overscroll-behavior: none; }
  * ========================================================================= */
 
 /* 吸顶高度：桌面无顶部条，移动端为顶栏高度 */
-:root { --topbar-h: 0px; }
+:root {
+  --topbar-h: 0px;
+  /* v3.3.0：吸顶细条高度 —— 页头视觉收缩后的实际高度（含状态栏安全区），
+     也是速记 / 课程吸顶工具栏的 top 基准 */
+  --ph-bar: calc(38px + env(safe-area-inset-top, 0px));
+}
 
 /* ===== 页头：折叠大标题（v3.1.10 · iOS Large Title / Android CollapsingToolbar 风格） =====
    v3.1.10：JS 把滚动进度连续写入 --hp (0~1)，CSS calc() 插值
-   v3.1.11 流畅度重写 —— 关键原则：滚动全程布局恒定，动画只走合成器（transform/opacity）：
-   · 标题字号固定，用 transform: scale 连续缩放（不触发重排；transform 不改布局）
-   · padding-top 不再逐帧插值，改为越过阈值后一次性 .stuck 过渡（320ms，之后布局又恒定）
-   · 毛玻璃条 blur 半径降到 10px 并提升为合成层，透明度渐显
-   · JS 端 --pagehead-h 只在值变化时写入，滚动帧不再强制同步布局 */
+   v3.1.11：滚动全程布局恒定，动画只走合成器
+   v3.2.1：整条上边框一起收成细条（头像、留白同步收紧）
+   v3.3.0 再次重写 —— 只改「看得见的高度」，不改「占位」：
+   · 页头的 margin / padding / 头像宽高全程不变 → 文档流高度恒定，
+     正文不会被页头收缩带着一起往上缩（v3.2.1 的 44px 跳变彻底消失）
+   · 变矮的是 ::before 这条背景的高度（absolute，不进布局）、
+     头像与标题的 transform（合成器）、下划线的 opacity —— 全程零重排
+   · 于是 --hp 可以逐帧连续插值，不需要 .stuck 阈值与 340ms 过渡，滚动更跟手 */
 .page-head {
   position: sticky; top: 0; z-index: 40;
   display: flex; align-items: center; gap: 14px;
-  /* v3.2.1：页头整体高度由 --ph-av（头像尺寸）与三段内/外边距共同决定，
-     吸顶态把这四者一起收紧 —— 整条上边框真正变矮，而不是只把字缩小 */
-  --ph-av: 42px;
+  --ph-av: 42px;        /* 展开态头像边长（布局尺寸，不再变化） */
+  --ph-row-h: 64px;     /* 展开态内容行高（标题块），位移量据此推算 */
+  /* 吸顶后内容需要上移到细条里居中：目标中心 = 条高/2，当前中心 = padding-top + 行高/2 */
+  --ph-dy: calc(var(--ph-bar) / 2 - var(--main-pt, 28px) - var(--ph-row-h) / 2);
   margin: calc(var(--main-pt, 28px) * -1) calc(var(--main-px, 22px) * -1) clamp(18px, 2.6vw, 26px);
   padding-top: var(--main-pt, 28px);
   padding-left: var(--main-px, 22px);
   padding-right: var(--main-px, 22px);
   padding-bottom: 10px;
-  transition:
-    padding-top .34s cubic-bezier(.32, .72, 0, 1),
-    padding-bottom .34s cubic-bezier(.32, .72, 0, 1),
-    margin-bottom .34s cubic-bezier(.32, .72, 0, 1);
+  /* 页头体积比细条大得多，透明部分不能拦住正文的点击 */
+  pointer-events: none;
 }
-/* 吸顶收紧态：越过阈值后一次性过渡到紧凑高度（布局动画只发生这一次，非逐帧）
-   42px 头像 → 30px + 上下内边距趋零 + 下边距收窄：整条从 ~80px 收到 ~36px */
-.page-head.stuck {
-  --ph-av: 30px;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 4px);
-  padding-bottom: 2px;
-  margin-bottom: 12px;
-}
-/* 毛玻璃吸顶条：随滚动进度渐显（opacity + 合成层提升） */
+.page-head > * { pointer-events: auto; }
+/* 毛玻璃吸顶条：高度随 --hp 从「整个页头」收到「细条」，背景随进度渐显 */
 .page-head::before {
-  content: ''; position: absolute; inset: 0; z-index: -1;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; z-index: -1;
+  height: calc(100% * (1 - var(--hp, 0)) + var(--ph-bar) * var(--hp, 0));
   background: var(--paper-translucent);
   -webkit-backdrop-filter: blur(10px) saturate(1.6);
   backdrop-filter: blur(10px) saturate(1.6);
@@ -1007,42 +1024,42 @@ html.drag-lock, html.drag-lock body { overscroll-behavior: none; }
   opacity: var(--hp, 0);
   transform: translateZ(0);
   pointer-events: none;
+  will-change: height, opacity;
 }
 .page-head .view-title {
   flex: 1; min-width: 0; margin-bottom: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  transition: line-height .34s cubic-bezier(.32, .72, 0, 1);
-  /* 字号固定 31px，吸顶小标题用 transform 缩放（不参与布局 → 滚动全程页头高度恒定）。
-     v3.2.1：系数收到 .38，吸顶后约 19px，和 30px 头像 / 36px 细条比例更协调 */
+  /* 字号/行高固定：缩放与上移都走 transform，不参与布局 */
   font-size: 31px;
-  transform: scale(calc(1 - var(--hp, 0) * .38));
+  transform: translateY(calc(var(--hp, 0) * var(--ph-dy)))
+             scale(calc(1 - var(--hp, 0) * .38));
   transform-origin: left center;
   will-change: transform;
 }
+/* 下划线只淡出 + 横向压缩，占位不变（改 height/margin 会让页头高度跟着变） */
 .page-head .view-title::after {
   margin-top: 10px;
   opacity: calc(1 - var(--hp, 0) * 1.6);
   transform: scaleX(calc(1 - var(--hp, 0) * .55));
   transform-origin: left center;
 }
-/* 吸顶细条态：标题行高与下划线的占位一并收掉，否则 1.65 的行高会把细条撑高 20px */
-.page-head.stuck .view-title { line-height: 26px; }
-.page-head.stuck .view-title::after { margin-top: 0; height: 0; box-shadow: none; }
 .page-avatar .avatar-face {
-  /* v3.2.1：尺寸跟随 --ph-av 变化（吸顶时 42 → 30），整条页头随之变矮；
-     不再叠加 transform 缩放，避免「字小了、框没小」的割裂感 */
+  /* v3.3.0：宽度固定 42px，靠 transform 缩到 ~30px —— 与标题同理，
+     视觉上「框跟着变小」，但不会改变页头占位高度 */
   width: var(--ph-av, 42px); height: var(--ph-av, 42px);
   font-size: calc(var(--ph-av, 42px) * .476);
   border-radius: calc(var(--ph-av, 42px) * .31);
   box-shadow: inset 0 -2px 0 rgba(0,0,0,.14), inset 0 0 0 1px rgba(255,255,255,.22), var(--shadow-sm);
-  transition: width .34s cubic-bezier(.32, .72, 0, 1),
-              height .34s cubic-bezier(.32, .72, 0, 1),
-              font-size .34s cubic-bezier(.32, .72, 0, 1),
-              border-radius .34s cubic-bezier(.32, .72, 0, 1);
+  transform: translateY(calc(var(--hp, 0) * var(--ph-dy)))
+             scale(calc(1 - var(--hp, 0) * var(--ph-av-sh, .286)));
+  transform-origin: center;
+  will-change: transform;
 }
 .page-head #bookSelectMobileBtn {
   margin-left: auto; flex-shrink: 0;
-  transform: scale(calc(1 - var(--hp, 0) * .1));
+  /* v3.3.0：跟标题/头像一起上移到细条里，否则会掉到条下方 */
+  transform: translateY(calc(var(--hp, 0) * var(--ph-dy)))
+             scale(calc(1 - var(--hp, 0) * .1));
   transform-origin: right center;
 }
 
@@ -1229,6 +1246,13 @@ body.drawer-open { overflow: hidden; }
 .set-desc { font-size: 12px; color: var(--ink-muted); margin-top: 3px; line-height: 1.55; }
 .stepper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .input-compact { width: auto; min-width: 112px; padding: 8px 30px 8px 11px; font-size: 13px; }
+/* v3.3.0：设置行的下拉不再被长说明挤窄（原来会被压到 min-width 以下，选项文字只剩半截） */
+.set-row > select.input-compact { flex-shrink: 0; max-width: 46%; }
+/* 手机：词书相关的几行改为「说明在上、下拉整行在下」，词书名再长也不会被截 */
+@media (max-width: 600px) {
+  .set-row-stack { flex-wrap: wrap; }
+  .set-row-stack > select.input-compact { flex: 0 0 100%; width: 100%; max-width: 100%; margin-top: 8px; }
+}
 
 /* 分段选择（主题切换等三选一） */
 .seg-group {
@@ -1304,7 +1328,7 @@ body.drawer-open { overflow: hidden; }
 
 /* ===== 速记 v2.1：吸顶工具栏（压缩排版）+ 遮罩 + 分页 ===== */
 .rote-sticky {
-  position: sticky; top: var(--pagehead-h, var(--topbar-h)); z-index: 30;  /* v3.1.9：贴在吸顶页头下方 */
+  position: sticky; top: var(--ph-bar, var(--topbar-h)); z-index: 30;  /* v3.3.0：贴在吸顶细条正下方（细条高度恒定，不再依赖 JS 量高度） */
   background: var(--paper);
   margin: 0 0 12px;
   padding: 9px 0 8px;
@@ -1702,7 +1726,7 @@ body.drawer-open { overflow: hidden; }
   .goal-row { gap: 6px; flex-wrap: wrap; }
 
   /* 页头压缩（v3.1.10：移动端大标题插值区间略小） */
-  .page-head { gap: 11px; margin-bottom: 16px; --ph-av: 38px; }
+  .page-head { gap: 11px; margin-bottom: 16px; --ph-av: 38px; --ph-row-h: 54px; --ph-av-sh: .21; }
   .page-head .view-title { font-size: 26px; }   /* v3.1.11：字号固定，缩放走 transform */
   .page-head .view-title::after { margin-top: 8px; }
   /* v3.2.1：头像尺寸由 --ph-av 推导（38 → 吸顶 30），不再写死宽高 */

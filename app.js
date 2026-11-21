@@ -10,10 +10,21 @@
 'use strict';
 
 // ===== 版本 =====
-const APP_VERSION = '3.2.4';
+const APP_VERSION = '3.3.0';
 const APP_NAME = 'Token';
 const AUTHOR_MAIL = 'YJH_9999@163.com';
 const CHANGELOG = [
+  {
+    v: '3.3.0',
+    date: '2026-11-21',
+    title: '换词书同步速记 · 页头收放更顺',
+    items: [
+      '换到新词书时，与其它词书已背过的词重合的部分会询问是否把「✓ 已掌握 / △ 不太熟 / 红圈」一起带过来；本书已标过的词不会被覆盖，学习页判过「掌握」的词也算已掌握',
+      '设置 → 词书管理新增「切换词书时同步速记标记」：可选切书时询问 / 自动同步 / 不同步，另有「立即同步到当前词书」随时补一次',
+      '上划收起顶部大标题时，正文不再跟着一起往上缩：页头只把背景条与标题收细，占位高度保持不变，内容位置全程不动',
+      '标题收起改为跟手连续插值（不再到阈值才跳一下），滚动全程只动 transform 与背景高度，更顺滑',
+    ],
+  },
   {
     v: '3.2.4',
     date: '2026-11-18',
@@ -868,6 +879,8 @@ function getSettings() {
     streak: 0, lastStudyDay: null,
     bookOrder: [],       // v3.0.0 词书 chips 拖拽排序：按顺序存 bookId，未记录的按默认顺序排在后面
     badgeMode: 'number', // v3.0.0 自建词书角标：number=自动编号 01/02… legacy=「自建」 hidden=不显示
+    roteSyncMode: 'ask', // v3.3.0 换词书时同步速记标记：ask=首次询问 auto=自动 off=不同步
+    roteSyncAsked: [],   // v3.3.0 已询问过的词书（每本只问一次，避免反复打扰）
   };
   return Object.assign(def, loadJSON(LS.settings, {}));
 }
@@ -1472,31 +1485,22 @@ function moveMobilePill(animate) {
   }
 }
 
-// ===== 折叠大标题滚动进度（v3.1.10 连续插值；v3.1.11 流畅度优化） =====
-// 优化原则：滚动全程布局恒定 —— 字号/内边距不再逐帧插值（每帧全页重排是卡顿根因），
-// 标题缩放改走 CSS transform（合成器），padding 收紧改为越过阈值后一次性 .stuck 过渡；
-// --pagehead-h 只在值变化时写入，避免每帧强制同步布局
+// ===== 折叠大标题滚动进度（v3.1.10 连续插值 → v3.3.0 零重排） =====
+// v3.3.0：页头在文档流里的占位高度全程恒定（margin/padding/头像宽高都不随滚动变化），
+// 收缩只改 ::before 的背景高度与头像/标题的 transform —— 都是合成器或纯绘制属性，
+// 不触发重排。于是：
+//   · 正文不会再被页头收缩「带着一起往上缩」（旧版越过阈值时内容会跳 44px）
+//   · --hp 可以逐帧连续插值，不需要 .stuck 阈值与 340ms 过渡，滚动跟手度更好
+//   · 也不用再逐帧量页头高度回写 --pagehead-h（吸顶工具栏 top 直接用固定的 --ph-bar）
 let _headRaf = 0;
 let _lastHp = -1;
-let _headStuck = false;
-let _lastHeadH = -1;
-let _headSyncUntil = 0;
 let _foldY = -1;
+let _headEl = null;      // 当前页头缓存（切换视图时重建，避免每帧 querySelector）
 
-// v3.2.1：页头高度写入（吸顶工具栏的 top 依赖它）
-function writeHeadH() {
-  const head = document.querySelector('.view.active .page-head');
-  const h = head ? head.offsetHeight : 0;
-  if (h !== _lastHeadH) {
-    _lastHeadH = h;
-    document.documentElement.style.setProperty('--pagehead-h', h + 'px');
-  }
-}
-// v3.2.1：阈值切换后 480ms 内逐帧跟随页头高度（此时头像/内边距正在过渡，高度每帧都在变），
-// 否则吸顶工具栏会在过渡期间浮空，过渡结束才归位
-function headSyncLoop() {
-  writeHeadH();
-  if (performance.now() < _headSyncUntil) requestAnimationFrame(headSyncLoop);
+function activeHead() {
+  const cur = document.querySelector('.view.active .page-head');
+  if (cur !== _headEl) _headEl = cur;
+  return _headEl;
 }
 
 // v3.2.1：速记 / 课程单元 —— 向下滑收起工具栏（只看未掌握、遮罩…），向上滑展开
@@ -1522,21 +1526,14 @@ function updateStickyFold(y) {
 function updateHeadProgress() {
   _headRaf = 0;
   const y = window.scrollY || document.documentElement.scrollTop || 0;
-  const p = Math.min(1, Math.max(0, y / 110));
-  const rootStyle = document.documentElement.style;
+  // 96px 内完成整条收起：与页头实际高度（≈74px + 上方留白）基本对齐，手指划一小段就到位
+  const p = Math.min(1, Math.max(0, y / 96));
   if (Math.abs(p - _lastHp) > 0.002) {
     _lastHp = p;
-    rootStyle.setProperty('--hp', p.toFixed(3));
-  }
-  // 吸顶收紧：阈值 0.42 收紧 / 回落到 0.18 才还原（回滞防抖动），过渡由 CSS 一次性完成
-  const wantStuck = p >= (_headStuck ? 0.18 : 0.42);
-  if (wantStuck !== _headStuck) {
-    _headStuck = wantStuck;
-    document.querySelectorAll('.page-head').forEach(h => h.classList.toggle('stuck', wantStuck));
-    _headSyncUntil = performance.now() + 480;
-    requestAnimationFrame(headSyncLoop);
-  } else {
-    writeHeadH();
+    const head = activeHead();
+    // 变量写在页头自身（而非 :root）：重绘范围限制在这条页头里，其它视图不受影响
+    if (head) head.style.setProperty('--hp', p.toFixed(3));
+    else document.documentElement.style.setProperty('--hp', p.toFixed(3));
   }
   updateStickyFold(y);
 }
@@ -1588,7 +1585,8 @@ function switchView(name, opts) {
   window.scrollTo({ top: 0, behavior: 'auto' });
   document.querySelectorAll('.rote-sticky.folded').forEach(el => el.classList.remove('folded'));  // v3.2.1：换页重置工具栏
   _foldY = 0;
-  updateHeadProgress();   // v3.1.10：同步大标题进度与吸顶栏高度（y 已为 0 时 scroll 事件可能不触发）
+  _lastHp = -1;           // v3.3.0：--hp 写在页头自身，换页必须重写一次（y=0 时滚动事件不触发）
+  updateHeadProgress();
   if (!(opts && opts.noSave)) saveLastView();
 }
 
@@ -3032,6 +3030,152 @@ function saveRoteState() {
   renderRoteProgress();
 }
 
+/* ===== v3.3.0：跨词书速记标记同步 =====
+   同一个单词常同时出现在多本词书里（四级 / 六级 / 考研 / 自建书…）。切到一本新词书时，
+   与「其它词书已背过」的词重合的部分，可以把 ✓ 已掌握 / △ 不太熟 / 红圈 一并带过来，
+   省得从头再标一遍。本书已经标过的词一律不覆盖；学习进度里已判「掌握」的词也视作已掌握。 */
+const ROTE_SYNC_MODE_LABEL = { ask: '切书时询问', auto: '自动同步', off: '不同步' };
+const ROTE_RANK = { 1: 3, 2: 2, 3: 1 };   // 已掌握 > 不太熟 > 不认识：取其它书里最高的那一档
+
+let _roteSyncTarget = null;      // 当前弹层对应的词书
+let _roteSyncChecked = {};       // 本次会话已检查过的词书，避免反复扫描
+let _roteSyncBusy = false;
+
+function getRoteSyncMode() {
+  const m = getSettings().roteSyncMode;
+  return ROTE_SYNC_MODE_LABEL[m] ? m : 'ask';
+}
+
+// 扫描：目标词书里「其它词书已有标记」且「本书还没标」的词
+function scanRoteOverlap(targetId) {
+  const store = getRoteStore();
+  const own = (store[targetId] && store[targetId].marks) || {};
+  const pool = {};      // key -> 标记
+  const from = {};      // key -> 来源词书
+  Object.keys(store).forEach(bid => {
+    if (bid === targetId) return;
+    const marks = store[bid] && store[bid].marks;
+    if (!marks) return;
+    for (const k in marks) {
+      const m = marks[k];
+      if (!m) continue;
+      if (!pool[k] || (ROTE_RANK[m] || 0) > (ROTE_RANK[pool[k]] || 0)) { pool[k] = m; from[k] = bid; }
+    }
+  });
+  // 学习进度里「已掌握」的词也补成 ✓（有些词是在学习页背熟的，速记这边没标过）
+  const allProg = getAllProgress();
+  Object.keys(allProg).forEach(bid => {
+    if (bid === targetId) return;
+    const prog = allProg[bid] || {};
+    for (const k in prog) {
+      const st = prog[k];
+      if (!st || st.s !== 2 || pool[k]) continue;
+      pool[k] = 1; from[k] = bid;
+    }
+  });
+
+  const items = [];
+  const counts = { 1: 0, 2: 0, 3: 0 };
+  let ownCount = 0;
+  getWords(targetId).forEach(w => {
+    const k = wordKey(w.w);
+    if (!pool[k]) return;
+    if (own[k]) { ownCount++; return; }        // 本书已标：保留用户自己的判断
+    items.push({ key: k, mark: pool[k], from: from[k] });
+    counts[pool[k]] = (counts[pool[k]] || 0) + 1;
+  });
+  return { items, counts, ownCount };
+}
+
+// 写入标记（合并，不覆盖已有）+ 刷新当前速记页
+function applyRoteOverlap(targetId, items) {
+  if (!items || !items.length) return 0;
+  const store = getRoteStore();
+  const rec = store[targetId] || (store[targetId] = {});
+  if (!rec.marks) rec.marks = {};
+  items.forEach(it => { rec.marks[it.key] = it.mark; });
+  // 兼容旧版二态存档
+  rec.checked = Object.fromEntries(Object.entries(rec.marks).filter(([, v]) => v === 1).map(([k]) => [k, true]));
+  rec.savedAt = Date.now();
+  if (!Array.isArray(rec.order)) rec.order = [];
+  saveJSON(LS.rote, store);
+  markRoteSyncAsked(targetId);
+  if (currentView === 'rote' && getSettings().bookId === targetId) {
+    roteBookId = targetId;
+    loadRoteState(targetId);
+    buildRoteWords();
+    renderRoteList();
+    renderRoteProgress();
+  }
+  return items.length;
+}
+
+function markRoteSyncAsked(bookId) {
+  const s = getSettings();
+  const list = Array.isArray(s.roteSyncAsked) ? s.roteSyncAsked.slice() : [];
+  if (!list.includes(bookId)) { list.push(bookId); s.roteSyncAsked = list; saveSettings(s); }
+}
+
+function closeRoteSyncPrompt() {
+  const mask = $('#roteSyncMask');
+  if (mask) mask.classList.remove('open');
+}
+
+function openRoteSyncPrompt(bookId, data) {
+  const mask = $('#roteSyncMask');
+  if (!mask) return;
+  _roteSyncTarget = bookId;
+  const meta = getBookMeta(bookId);
+  const sub = $('#roteSyncSub');
+  if (sub) {
+    sub.textContent = `「${meta ? bookLabel(meta) : bookId}」里有 ${data.items.length} 个词在别的词书已经背过`
+      + (data.ownCount ? `（另有 ${data.ownCount} 个本书已标记，不会被覆盖）` : '')
+      + '，是否把这些速记标记一起带过来？';
+  }
+  const stats = $('#roteSyncStats');
+  if (stats) {
+    const chips = [
+      ['done', '已掌握', data.counts[1] || 0],
+      ['half', '不太熟', data.counts[2] || 0],
+      ['seen', '不认识', data.counts[3] || 0],
+    ].filter(c => c[2] > 0)
+      .map(c => `<span class="rs-chip ${c[0]}"><b>${c[2]}</b>${c[1]}</span>`).join('');
+    stats.innerHTML = chips;
+    stats.classList.toggle('hidden', !chips);
+  }
+  const apply = $('#roteSyncApply');
+  if (apply) apply.textContent = `同步 ${data.items.length} 个词`;
+  mask.classList.add('open');
+}
+
+// 入口：mode 决定「静默同步 / 首次询问 / 不打扰」
+function maybeOfferRoteSync(bookId, opts) {
+  if (_roteSyncBusy || !bookId) return false;
+  const mode = getRoteSyncMode();
+  if (mode === 'off') return false;
+  const mask = $('#roteSyncMask');
+  if (mask && mask.classList.contains('open')) return false;
+  const s = getSettings();
+  const asked = Array.isArray(s.roteSyncAsked) && s.roteSyncAsked.includes(bookId);
+  if (mode === 'ask' && asked && !(opts && opts.force)) return false;
+  const data = scanRoteOverlap(bookId);
+  if (!data.items.length) return false;
+  if (mode === 'auto') {
+    applyRoteOverlap(bookId, data.items);
+    toast(`已同步 ${data.items.length} 个词的速记标记`);
+    return true;
+  }
+  openRoteSyncPrompt(bookId, data);
+  return true;
+}
+
+// 首次使用某本词书时也问一次（不阻塞渲染，放在下一个宏任务里扫描）
+function scheduleRoteSyncOffer(bookId) {
+  if (!bookId || _roteSyncChecked[bookId]) return;
+  _roteSyncChecked[bookId] = true;
+  setTimeout(() => maybeOfferRoteSync(bookId), 320);
+}
+
 // 按持久化的 order 重建展示顺序；新词（不在 order 中）按原顺序追加
 function buildRoteWords() {
   const words = getWords(roteBookId);
@@ -3071,6 +3215,8 @@ function renderRote() {
   syncRoteButtons();
   renderRoteList();
   renderRoteProgress();
+  // v3.3.0：首次进这本词书时，若与已背过的词重合 → 询问是否同步速记标记
+  scheduleRoteSyncOffer(roteBookId);
 }
 
 function syncRoteButtons() {
@@ -5374,6 +5520,7 @@ function renderSettingsValues() {
   sel.value = s.bookId;
   $('#setRotePageSize').value = String(s.rotePageSize || 100);
   $('#setBadgeMode').value = s.badgeMode || 'number';
+  $('#setRoteSyncMode').value = getRoteSyncMode();
   $('#setExamName').value = s.examName || '';
   $('#setExamDate').value = s.examDate || '';
 }
@@ -5984,6 +6131,8 @@ function setBook(bookId) {
   if ($('#view-rote').classList.contains('active')) renderRote();
   const meta = getBookMeta(bookId);
   if (meta) toast(`已切换到「${bookLabel(meta)}」`);
+  // v3.3.0：切到新词书后，若里面有「其它词书已背过」的重合词 → 询问 / 自动同步速记标记
+  setTimeout(() => maybeOfferRoteSync(bookId), 260);
 }
 
 function updateMiniProgress() {
@@ -6220,9 +6369,9 @@ function bindEvents() {
   bindChipDrag();
   initBookPanel();   // v3.1.9：首页词书面板折叠
 
-  // v3.1.10/11：折叠大标题 —— 滚动进度连续插值
-  // 进度 p = scrollY/110 写入根元素 --hp (0~1)；CSS 端标题缩放/毛玻璃透明度走合成器，
-  // padding 收紧由 .stuck 一次性过渡（详见 updateHeadProgress 注释）
+  // v3.3.0：折叠大标题 —— 滚动进度连续插值（p = scrollY/96 → 页头 --hp）
+  // 页头布局尺寸全程恒定，插值只驱动 transform 与一条 absolute 背景的高度，
+  // 不触发重排，也不再有 .stuck 阈值切换（详见 updateHeadProgress 注释）
   window.addEventListener('scroll', () => {
     if (!_headRaf) _headRaf = requestAnimationFrame(updateHeadProgress);
   }, { passive: true });
@@ -6235,13 +6384,7 @@ function bindEvents() {
       bar.classList.toggle('folded');
     });
   });
-  // v3.1.11：.stuck 的 padding-top 过渡（320ms）通常发生在滚动事件停止之后，
-  // 过渡结束时页头高度已变，必须再同步一次 --pagehead-h，否则吸顶工具栏会错位
-  document.addEventListener('transitionend', (e) => {
-    if (e.propertyName === 'padding-top' && e.target && e.target.classList && e.target.classList.contains('page-head')) {
-      updateHeadProgress();
-    }
-  });
+  // v3.3.0：页头高度已恒定，不再需要监听 padding-top 过渡结束补量高度
 
   // 胜利分享弹层（v3.0.0）
   $('#victoryClose').addEventListener('click', closeVictory);
@@ -6559,6 +6702,44 @@ function bindEvents() {
     renderBookSwitcher();
     refreshBookSelect();
     toast('角标样式已更新');
+  });
+  // v3.3.0：切换词书时同步速记标记 —— 自主修改同步方式 / 手动同步一次
+  $('#setRoteSyncMode').addEventListener('change', (e) => {
+    const s = getSettings();
+    s.roteSyncMode = ROTE_SYNC_MODE_LABEL[e.target.value] ? e.target.value : 'ask';
+    s.roteSyncAsked = [];     // 改了策略就重新生效：每本词书可以再被问一次
+    saveSettings(s);
+    toast(s.roteSyncMode === 'off' ? '换词书时不再同步速记标记'
+      : s.roteSyncMode === 'auto' ? '换词书时自动同步速记标记'
+      : '换到新词书时会询问是否同步');
+  });
+  $('#setRoteSyncNowBtn').addEventListener('click', () => {
+    const bookId = getSettings().bookId;
+    const data = scanRoteOverlap(bookId);
+    if (!data.items.length) {
+      toast('当前词书没有可同步的标记：别的词书里还没有重合的已背词');
+      return;
+    }
+    const n = applyRoteOverlap(bookId, data.items);
+    toast(`已同步 ${n} 个词的速记标记到当前词书`);
+  });
+  // v3.3.0：同步询问弹层
+  $('#roteSyncApply').addEventListener('click', () => {
+    const id = _roteSyncTarget;
+    closeRoteSyncPrompt();
+    if (!id) return;
+    const data = scanRoteOverlap(id);
+    if (!data.items.length) { toast('没有可同步的标记了'); return; }
+    const n = applyRoteOverlap(id, data.items);
+    toast(`已同步 ${n} 个词的速记标记`);
+  });
+  $('#roteSyncSkip').addEventListener('click', () => {
+    const id = _roteSyncTarget;
+    closeRoteSyncPrompt();
+    if (id) markRoteSyncAsked(id);   // 每本词书只问一次，之后可在设置里改策略
+  });
+  $('#roteSyncMask').addEventListener('click', (e) => {
+    if (e.target === $('#roteSyncMask')) closeRoteSyncPrompt();
   });
   $('#setImportBtn').addEventListener('click', () => { importFrom = 'settings'; switchView('import'); });
   $('#setStatsBtn').addEventListener('click', () => switchView('stats'));
