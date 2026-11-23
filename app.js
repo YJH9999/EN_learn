@@ -10,10 +10,21 @@
 'use strict';
 
 // ===== 版本 =====
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.3.1';
 const APP_NAME = 'Token';
 const AUTHOR_MAIL = 'YJH_9999@163.com';
 const CHANGELOG = [
+  {
+    v: '3.3.1',
+    date: '2026-11-23',
+    title: '修复应用内下载 · 页头收放更稳',
+    items: [
+      '修复应用内更新下载失败：安装包改为原生下载（自动跟随跳转、浏览器 UA、自带进度），下完校验文件确实是个 APK 才交给安装器；某个源失败会自动换下一个',
+      '应用内下载全部失败时，按钮会变成「用浏览器下载」，一键交给系统浏览器获取安装包',
+      '页头收起不再逐帧改变模糊条尺寸（慢速滑动掉帧的主因），改为固定细条 + 渐变收口：正文在碰到细条前先柔和淡出，不会再从页头下面「浮出来」',
+      '顺手把滚动帧里的 DOM 查询做了缓存，慢速上划时的细小卡顿一并减少',
+    ],
+  },
   {
     v: '3.3.0',
     date: '2026-11-21',
@@ -1484,27 +1495,37 @@ function moveMobilePill(animate) {
   }
 }
 
-// ===== 折叠大标题滚动进度（v3.1.10 连续插值 → v3.3.0 零重排） =====
-// v3.3.0：页头在文档流里的占位高度全程恒定（margin/padding/头像宽高都不随滚动变化），
-// 收缩只改 ::before 的背景高度与头像/标题的 transform —— 都是合成器或纯绘制属性，
-// 不触发重排。于是：
-//   · 正文不会再被页头收缩「带着一起往上缩」（旧版越过阈值时内容会跳 44px）
-//   · --hp 可以逐帧连续插值，不需要 .stuck 阈值与 340ms 过渡，滚动跟手度更好
+// ===== 折叠大标题滚动进度（v3.1.10 连续插值 → v3.3.1 纯合成层） =====
+// 页头在文档流里的占位高度全程恒定（margin/padding/头像宽高都不随滚动变化），
+// 收缩只改 ::before 的透明度、::after 遮罩的透明度与头像/标题的 transform ——
+// 不触发重排，也不逐帧改模糊层尺寸（v3.3.0 每帧改 height 会反复重算 backdrop-filter，
+// 是 Slow-scroll 掉帧的根源）。于是：
+//   · 正文不会被页头收缩「带着一起往上缩」
+//   · --hp 可以逐帧连续插值，不需要 .stuck 阈值与过渡，滚动跟手度更好
 //   · 也不用再逐帧量页头高度回写 --pagehead-h（吸顶工具栏 top 直接用固定的 --ph-bar）
 let _headRaf = 0;
 let _lastHp = -1;
 let _foldY = -1;
-let _headEl = null;      // 当前页头缓存（切换视图时重建，避免每帧 querySelector）
+let _headEl = null;      // 当前页头缓存（切换视图时置空，避免每帧 querySelector）
+let _stickyEl = null;    // 当前速记/课程吸顶工具栏缓存
 
 function activeHead() {
-  const cur = document.querySelector('.view.active .page-head');
-  if (cur !== _headEl) _headEl = cur;
+  if (!_headEl || !_headEl.isConnected || !_headEl.closest('.view.active')) {
+    _headEl = document.querySelector('.view.active .page-head');
+  }
   return _headEl;
+}
+
+function activeSticky() {
+  if (!_stickyEl || !_stickyEl.isConnected || !_stickyEl.closest('.view.active')) {
+    _stickyEl = document.querySelector('.view.active .rote-sticky');
+  }
+  return _stickyEl;
 }
 
 // v3.2.1：速记 / 课程单元 —— 向下滑收起工具栏（只看未掌握、遮罩…），向上滑展开
 function setStickyFold(on) {
-  const el = document.querySelector('.view.active .rote-sticky');
+  const el = activeSticky();
   if (!el) return false;
   const folded = el.classList.contains('folded');
   if (folded === !!on) return false;
@@ -1512,7 +1533,7 @@ function setStickyFold(on) {
   return true;
 }
 function updateStickyFold(y) {
-  const el = document.querySelector('.view.active .rote-sticky');
+  const el = activeSticky();
   if (!el) { _foldY = y; return; }
   const dy = y - _foldY;
   _foldY = y;
@@ -6834,9 +6855,11 @@ function updChannels() {
 }
 
 let _updInfo = null;                   // 最近一次查到的版本信息
-let _updFileUri = '';                  // 已下载好的安装包（授权后重试时复用）
+let _updFileUri = '';                  // 已下载好的安装包（绝对路径，授权后重试时复用）
+let _updOpenPage = false;              // 下载全失败后，主按钮改为「用浏览器下载」
 let _updBusy = false;
 let _updListenerBound = false;
+let _updFsListenerBound = false;
 
 const isNativeApp = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 const capPlugin = (n) => (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins[n]) || null;
@@ -6918,6 +6941,7 @@ function updSetStatus(text) {
 function openUpdateDialog(info, manual) {
   _updInfo = info;
   _updFileUri = '';
+  _updOpenPage = false;
   $('#updTitle').textContent = 'v' + info.ver;
   $('#updSub').textContent = `当前 v${APP_VERSION}` + (info.size ? ` · 安装包约 ${(info.size / 1048576).toFixed(1)} MB` : '');
   $('#updNotes').textContent = info.notes || '这一版修复了若干问题、优化了细节，建议更新。';
@@ -7000,8 +7024,15 @@ async function downloadAndInstall() {
   const DS = capPlugin('DownloadSaver');
   const sources = apkSources(info);
 
+  // 下载全失败后主按钮变成「用浏览器下载」，直接交给系统浏览器（能下就直接覆盖装）
+  if (_updOpenPage) {
+    window.open(info.url || UPD_PAGE, '_blank');
+    $('#updTip').textContent = '已交给系统浏览器下载，下载完成后点通知或「下载」里的安装包即可覆盖更新。';
+    return;
+  }
+
   // 没有原生能力（网页版 / 浏览器）：把国内加速链接交给浏览器，比 GitHub 原链快得多
-  if (!isNativeApp() || !FS || !DS) {
+  if (!isNativeApp() || !DS) {
     window.open(sources[0].url, '_blank');
     $('#updTip').textContent = `已打开${sources[0].label}下载页，下载完成后点安装包即可覆盖更新。`;
     return;
@@ -7011,11 +7042,12 @@ async function downloadAndInstall() {
   if (_updFileUri) return runInstall(_updFileUri);
 
   const btn = $('#updNow');
-  const path = 'updates/Token-v' + info.ver + '.apk';
+  const apkName = 'Token-v' + info.ver + '.apk';
   const setPct = (p) => {
     const pct = Math.max(0, Math.min(100, Math.round(p)));
     $('#updBar').style.width = pct + '%';
     $('#updPct').textContent = pct + '%';
+    if (pct >= 100) $('#updTip').textContent = '下载完成，正在调起系统安装界面…';
   };
 
   btn.disabled = true;
@@ -7023,23 +7055,67 @@ async function downloadAndInstall() {
   $('#updProgressWrap').classList.remove('hidden');
   setPct(0);
 
-  if (!_updListenerBound && FS.addListener) {
+  // v3.3.1：优先用原生 downloadApk（自带重定向、浏览器 UA、PK 校验与进度事件）；
+  // 老版本 App 没有这个方法时退回 Filesystem —— 但路径必须放在 CACHE 根目录，
+  // 因为 Filesystem 的下载分支不会创建子目录（"updates/x.apk" 必然 ENOENT，这正是
+  // v3.2.2~v3.3.0 应用内下载一直失败的原因）。
+  let useNative = typeof DS.downloadApk === 'function';
+  const fsPath = apkName;
+
+  if (!_updListenerBound && DS.addListener) {
     _updListenerBound = true;
+    DS.addListener('progress', (st) => {
+      if (st && st.contentLength > 0) setPct((st.bytes / st.contentLength) * 100);
+    });
+  }
+  if (!_updFsListenerBound && FS && FS.addListener) {
+    _updFsListenerBound = true;
     FS.addListener('progress', (st) => {
       if (st && st.contentLength > 0) setPct((st.bytes / st.contentLength) * 100);
     });
   }
 
-  // 缓存里已有完整文件就直接装（尺寸对得上才算；误差容忍 4KB）
-  try {
-    const st = await FS.stat({ path, directory: 'CACHE' });
-    if (st && st.size && info.size && Math.abs(st.size - info.size) <= 4096) {
-      setPct(100);
-      const got = await FS.getUri({ path, directory: 'CACHE' });
-      _updFileUri = got.uri;
-      return runInstall(_updFileUri);
+  const checkSize = (size) => {
+    if (info.size && size && Math.abs(size - info.size) > 8192) {
+      throw new Error('文件不完整 ' + size + '/' + info.size);
     }
-  } catch (e) { /* 没缓存，正常下载 */ }
+  };
+  // 原生下载（返回绝对路径）
+  const nativeFetch = async (src) => {
+    const r = await DS.downloadApk({ url: src.url, path: apkName });
+    if (!r || !r.path) throw new Error('下载未返回文件');
+    checkSize(r.size);
+    return r.path;
+  };
+  // 兜底：Filesystem 下载（返 content://）
+  const fsFetch = async (src) => {
+    try { await FS.deleteFile({ path: fsPath, directory: 'CACHE' }); } catch (e) { /* 本来没有 */ }
+    await FS.downloadFile({
+      url: src.url,
+      path: fsPath,
+      directory: 'CACHE',
+      progress: true,
+      connectTimeout: 12000,     // 接不上就赶紧换源，不让用户干等
+      readTimeout: 60000,
+    });
+    const st = await FS.stat({ path: fsPath, directory: 'CACHE' });
+    checkSize(st && st.size);
+    const got = await FS.getUri({ path: fsPath, directory: 'CACHE' });
+    return got.uri;
+  };
+
+  // 缓存里已有完整文件就直接装（仅 Filesystem 路径；原生每次都会重下到同一位置）
+  if (!useNative && FS) {
+    try {
+      const st = await FS.stat({ path: fsPath, directory: 'CACHE' });
+      if (st && st.size && info.size && Math.abs(st.size - info.size) <= 8192) {
+        setPct(100);
+        const got = await FS.getUri({ path: fsPath, directory: 'CACHE' });
+        _updFileUri = got.uri;
+        return runInstall(_updFileUri);
+      }
+    } catch (e) { /* 没缓存，正常下载 */ }
+  }
 
   // 依次尝试各下载源：连不上 / 文件不完整就换下一个，全失败才报错
   let lastErr = '';
@@ -7048,37 +7124,40 @@ async function downloadAndInstall() {
     btn.textContent = i === 0 ? '下载中…' : '换源重试…';
     $('#updTip').textContent = i === 0
       ? `正在通过${src.label}下载…`
-      : `当前节点较慢，已切换到${src.label}继续…`;
+      : `当前节点不可用，已切换到${src.label}继续…`;
     setPct(0);
     try {
-      // 换源前清掉可能残留的半截文件，否则尺寸校验会误判
-      try { await FS.deleteFile({ path, directory: 'CACHE' }); } catch (e) { /* 本来没有 */ }
-      await FS.downloadFile({
-        url: src.url,
-        path,
-        directory: 'CACHE',
-        progress: true,
-        recursive: true,
-        connectTimeout: 12000,     // 接不上就赶紧换源，不让用户干等
-        readTimeout: 60000,
-      });
-      const st = await FS.stat({ path, directory: 'CACHE' });
-      if (info.size && st && st.size && Math.abs(st.size - info.size) > 4096) {
-        throw new Error('文件不完整 ' + st.size + '/' + info.size);
+      let filePath = '';
+      if (useNative) {
+        try {
+          filePath = await nativeFetch(src);
+        } catch (e) {
+          // 老版本装的是没有 downloadApk 的实现时会报 "not implemented"，就地降级
+          if (/not implemented|未实现/i.test(String((e && e.message) || e))) {
+            useNative = false;
+            filePath = await fsFetch(src);
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        filePath = await fsFetch(src);
       }
       setPct(100);
       try { localStorage.setItem(UPD_OK_KEY, src.id); } catch (e) { /* 隐私模式忽略 */ }
-      const got = await FS.getUri({ path, directory: 'CACHE' });
-      _updFileUri = got.uri;
+      _updFileUri = filePath;
       return await runInstall(_updFileUri);
     } catch (e) {
       lastErr = (e && e.message) || String(e);
+      // 单个源失败就清掉残留，避免下一次 stat 误判
+      if (!useNative && FS) { try { await FS.deleteFile({ path: fsPath, directory: 'CACHE' }); } catch (err) { /* ignore */ } }
     }
   }
 
   btn.disabled = false;
-  btn.textContent = '重新下载';
-  $('#updTip').textContent = `下载失败：${lastErr}。已尝试 ${sources.length} 个下载源，可稍后重试或到 Releases 页手动下载。`;
+  _updOpenPage = true;
+  btn.textContent = '用浏览器下载';
+  $('#updTip').textContent = `应用内下载失败（${lastErr}）。已尝试 ${sources.length} 个下载源，点「用浏览器下载」可直接到下载页手动获取。`;
 }
 
 function bindUpdateEvents() {
@@ -7099,6 +7178,10 @@ function bindUpdateEvents() {
     const next = updPrefNow() === 'github' ? 'auto' : 'github';
     try { localStorage.setItem(UPD_SRC_KEY, next); } catch (e) { /* ignore */ }
     renderUpdSrc();
+    // 换源后回到「立即更新」状态（之前失败可能已把按钮改成「用浏览器下载」）
+    _updOpenPage = false;
+    const nowBtn = $('#updNow');
+    if (nowBtn && nowBtn.textContent !== '已开始安装') { nowBtn.disabled = false; nowBtn.textContent = '立即更新'; }
     const tip = $('#updTip');
     if (tip && !_updFileUri) {
       tip.textContent = `已切换下载源：将从${apkSources(_updInfo || { url: '' })[0].label}下载。点「立即更新」重试。`;

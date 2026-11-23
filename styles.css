@@ -1012,20 +1012,40 @@ html.drag-lock, html.drag-lock body { overscroll-behavior: none; }
   pointer-events: none;
 }
 .page-head > * { pointer-events: auto; }
-/* 毛玻璃吸顶条：高度随 --hp 从「整个页头」收到「细条」，背景随进度渐显 */
+/* v3.3.1 毛玻璃吸顶条：高度**恒定**为细条高度，只动画 opacity。
+   旧版逐帧改 height → 每帧都要重新计算 backdrop-filter 的模糊区域（Android WebView 上
+   是整屏级开销），慢速滑动时肉眼可见掉帧；固定尺寸后模糊纹理可复用，只剩合成。 */
 .page-head::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; z-index: -1;
-  height: calc(100% * (1 - var(--hp, 0)) + var(--ph-bar) * var(--hp, 0));
+  height: var(--ph-bar);
   background: var(--paper-translucent);
   -webkit-backdrop-filter: blur(10px) saturate(1.6);
   backdrop-filter: blur(10px) saturate(1.6);
   border-bottom: 0.5px solid var(--line);
   box-shadow: 0 6px 18px -14px rgba(15, 23, 42, .35);
-  opacity: var(--hp, 0);
+  /* 前 12% 不显现（此时条还很「高」，露出毛玻璃会压住大标题），之后快速淡入 */
+  opacity: clamp(0, calc((var(--hp, 0) - .12) / .33), 1);
   transform: translateZ(0);
   pointer-events: none;
-  will-change: height, opacity;
+  will-change: opacity;
 }
+/* v3.3.1 「看得见的空白带」遮罩：页头占位恒定（≈82px）而视觉收缩到 38px，
+   中间那 44px 若不管，正文会从细条下面「浮出来」——慢速滑动时就像正文跟着往上缩。
+   这里盖一段 paper 底色 + 向下渐隐的蒙版，让正文在碰到细条前先淡出，
+   视觉上是一条柔和的收口，正文不会在页头里穿行。
+   遮罩是静态的，只动画 opacity（合成层），不产生逐帧绘制。 */
+.page-head::after {
+  content: ''; position: absolute; left: 0; right: 0; z-index: -1;
+  top: var(--ph-bar); height: calc(100% - var(--ph-bar));
+  background: var(--paper);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 26%, transparent 74%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 26%, transparent 74%);
+  opacity: var(--hp, 0);
+  pointer-events: none;
+}
+/* 速记 / 课程页：细条下面立刻就是吸顶工具栏（z-index 低于页头），
+   收口遮罩会把它一起盖成半透明 —— 这些页面正文本来就被工具栏挡住，不需要遮罩 */
+.view:has(.rote-sticky) .page-head::after { display: none; }
 .page-head .view-title {
   flex: 1; min-width: 0; margin-bottom: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
